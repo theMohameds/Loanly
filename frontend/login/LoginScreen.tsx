@@ -1,17 +1,19 @@
 import React from 'react';
-import { View, Text } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { View, Text, Button, StyleSheet } from 'react-native';
 
-type RootStackParamList = {
-    Login: undefined;
-};
-
-type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
-
-const LoginScreen: React.FC<Props> = ({ navigation }) => {
+export default function LoginScreen({ navigation }: any) {
     return (
-        <View>
-            <Text>Login Screen</Text>
+        <View style={styles.container}>
+            <Text style={styles.title}>Login Screen</Text>
+            <Button
+                title="Login"
+                onPress={() => navigation.replace('MainTabs')}
+            />
         </View>
     );
-};
+}
+
+const styles = StyleSheet.create({
+    container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    title: { fontSize: 20, marginBottom: 20 },
+});

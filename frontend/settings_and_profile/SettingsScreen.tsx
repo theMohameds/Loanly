@@ -1,17 +1,16 @@
 import React from 'react';
-import { View, Text } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { View, Text, StyleSheet } from 'react-native';
 
-type RootStackParamList = {
-    Settings: undefined;
-};
-
-type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
-
-const SettingsScreen: React.FC<Props> = ({ navigation }) => {
+export default function SettingsScreen() {
     return (
-        <View>
-            <Text>Settings Screen</Text>
+        <View style={styles.container}>
+            <Text style={styles.title}>Settings</Text>
+            <Text>Change your preferences here</Text>
         </View>
     );
-};
+}
+
+const styles = StyleSheet.create({
+    container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    title: { fontSize: 20, marginBottom: 10 },
+});

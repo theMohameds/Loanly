@@ -1,17 +1,16 @@
 import React from 'react';
-import { View, Text } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { View, Text, StyleSheet } from 'react-native';
 
-type RootStackParamList = {
-    Bookings: undefined;
-};
-
-type Props = NativeStackScreenProps<RootStackParamList, 'BookingsScreen'>;
-
-const BookingsScreen: React.FC<Props> = ({ navigation }) => {
+export default function BookingsScreen() {
     return (
-        <View>
-            <Text>Bookings Screen</Text>
+        <View style={styles.container}>
+            <Text style={styles.title}>My Bookings</Text>
+            <Text>List of current and past bookings will appear here.</Text>
         </View>
     );
-};
+}
+
+const styles = StyleSheet.create({
+    container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    title: { fontSize: 20, marginBottom: 10 },
+});
