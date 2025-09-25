@@ -1,3 +1,18 @@
+export enum CarType{
+  Sedan = "Sedan",
+  SUV = "SUV",
+  Pickup = "Pickup Truck",
+  Minivan = "Minivan",
+  Hatchback = "Hatchback"
+}
+
+export enum FuelType{
+  Benzin = "Benzin",
+  Diesel = "Diesel",
+  Electric = "Electric",
+  Hybrid = "Hybrid"
+}
+
 export default class Car {
   id: number;
   make: string;
