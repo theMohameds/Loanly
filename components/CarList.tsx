@@ -10,6 +10,7 @@ export default function CarList({ cars }: Props) {
   return (
     <FlatList
       data={cars}
+      extraData={cars} // forces FlatList to re-render when state changes
       keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => (
         <View style={styles.card}>
