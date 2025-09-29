@@ -22,18 +22,18 @@ export default function App() {
   const fetchAndSave = async () => {
     console.log("Fetching cars from API...");
     const data = await getCarsFromAPI();
-    console.log("Fetched data:", data);
+    console.log("Fetched cars:", data);
 
     await clearCars();
     console.log("Cleared old cars.");
 
     await saveCars(data);
-    console.log("Saved new cars.");
+    console.log("Saved new cars to SQLite.");
 
+    // Load from database AFTER saving
     const storedCars = await loadCars();
-    console.log("Cars from DB:", storedCars);
-
-    setCars(storedCars);
+    console.log("Loaded cars from SQLite:", storedCars);
+    setCars(storedCars); // display
   };
 
   return (
