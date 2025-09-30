@@ -28,6 +28,8 @@ function MainTabs() {
             <Tab.Screen name="MainMenu" component={MainMenuScreen} />
             <Tab.Screen name="Bookings" component={BookingsStack} options={{ title: "Bookings"}} />
             <Tab.Screen name="ProfileStack" component={ProfileStack} options={{ title: "Profile" }} />
+            <Tab.Screen name="SettingsStack" component={SettingsStack} options={{ title: "Settings" }} />
+
         </Tab.Navigator>
     );
 }
@@ -36,6 +38,13 @@ function ProfileStack() {
     return (
         <Stack.Navigator screenOptions={{headerShown: false}}>
             <Stack.Screen name="Profile" component={Profile}  />
+        </Stack.Navigator>
+    );
+}
+
+function SettingsStack() {
+    return (
+        <Stack.Navigator screenOptions={{headerShown: false}}>
             <Stack.Screen name="Settings" component={SettingsScreen} />
         </Stack.Navigator>
     );
