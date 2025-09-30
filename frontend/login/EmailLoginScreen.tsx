@@ -1,10 +1,35 @@
 import React, { useState } from 'react';
-import {Text, TextInput, Pressable, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform, ScrollView
+import {Text, TextInput, Pressable, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, Alert
 } from 'react-native';
 
 export default function EmailLoginScreen({ navigation }: any) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
+    // Login validation function
+    const handleLogin = () => {
+        // Check if both fields are filled
+        if (!email || !password) {
+            Alert.alert('Error', 'Please fill in both email and password');
+            return;
+        }
+
+        // Email validation
+        if (!email.includes('@') || !email.includes('.')) {
+            Alert.alert('Error', 'Please enter a valid email address');
+            return;
+        }
+
+        // Checking password length
+        if (password.length < 6) {
+            Alert.alert('Error', 'Password must be at least 6 characters');
+            return;
+        }
+
+        // if All validations Is == succes then you can navigate to mainTabs
+        Alert.alert('Success', 'Login successful!');
+        navigation.navigate('MainTabs', { screen: 'Home' });
+    };
 
     return (
         <ImageBackground
@@ -20,10 +45,10 @@ export default function EmailLoginScreen({ navigation }: any) {
                     contentContainerStyle={styles.scroll}
                     keyboardShouldPersistTaps="handled"
                 >
-                    {/* Logo at the top */}
+                    {/* Logo */}
                     <Text style={styles.logo}>LOANLY</Text>
 
-                    {/* Inputs */}
+                    {/* Email input */}
                     <TextInput
                         style={styles.input}
                         placeholder="E-mail"
@@ -31,6 +56,8 @@ export default function EmailLoginScreen({ navigation }: any) {
                         value={email}
                         onChangeText={setEmail}
                     />
+
+                    {/* Password input */}
                     <TextInput
                         style={styles.input}
                         placeholder="Password"
@@ -40,12 +67,12 @@ export default function EmailLoginScreen({ navigation }: any) {
                         onChangeText={setPassword}
                     />
 
-                    {/* loging button */}
+                    {/* Login button */}
                     <Pressable
                         style={styles.button}
-                        onPress={() => navigation.replace('MainTabs')}
+                        onPress={handleLogin}
                     >
-                        <Text style={styles.buttonText}>Log in</Text>
+                        <Text style={styles.buttonText}>Login</Text>
                     </Pressable>
                 </ScrollView>
             </KeyboardAvoidingView>
@@ -55,17 +82,13 @@ export default function EmailLoginScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
     bg: { flex: 1, width: '100%', height: '100%' },
-    scroll: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        padding: 24,
-    },
+    scroll: { flexGrow: 1, justifyContent: 'center', padding: 24 },
     logo: {
         fontSize: 32,
         fontWeight: '800',
         color: 'white',
-        marginBottom: 60,
-        marginTop: 60,    // pushes logo futher to the top
+        marginBottom: 60, // pushes logo further to the top
+        marginTop: 60,
         alignSelf: 'center',
     },
     input: {
