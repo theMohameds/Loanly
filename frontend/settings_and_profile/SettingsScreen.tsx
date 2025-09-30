@@ -51,15 +51,15 @@ const SettingsScreen: React.FC = () => {
     };
 
     return (
-        <ScrollView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Settings</Text>
+        <ScrollView style={[styles.container, darkMode && styles.containerDark]}>
+            <View style={[styles.header, darkMode && styles.headerDark]}>
+                <Text style={[styles.headerTitle, darkMode && styles.headerTitleDark]}>Settings</Text>
             </View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Notifications</Text>
-                <View style={styles.settingItem}>
-                    <Text style={styles.settingText}>Push Notifications</Text>
+            <View style={[styles.section, darkMode && styles.sectionDark]}>
+                <Text style={[styles.sectionTitle, darkMode && styles.sectionTitleDark]}>Notifications</Text>
+                <View style={[styles.settingItem, darkMode && styles.settingItemDark]}>
+                    <Text style={[styles.settingText, darkMode && styles.settingTextDark]}>Push Notifications</Text>
                     <Switch
                         value={notifications}
                         onValueChange={setNotifications}
@@ -67,8 +67,8 @@ const SettingsScreen: React.FC = () => {
                         thumbColor={notifications ? '#fff' : '#f4f3f4'}
                     />
                 </View>
-                <View style={styles.settingItem}>
-                    <Text style={styles.settingText}>Email Notifications</Text>
+                <View style={[styles.settingItem, darkMode && styles.settingItemDark]}>
+                    <Text style={[styles.settingText, darkMode && styles.settingTextDark]}>Email Notifications</Text>
                     <Switch
                         value={emailNotifications}
                         onValueChange={setEmailNotifications}
@@ -78,24 +78,24 @@ const SettingsScreen: React.FC = () => {
                 </View>
             </View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Preferences</Text>
-                <TouchableOpacity style={styles.settingItem}>
-                    <Text style={styles.settingText}>Language</Text>
+            <View style={[styles.section, darkMode && styles.sectionDark]}>
+                <Text style={[styles.sectionTitle, darkMode && styles.sectionTitleDark]}>Preferences</Text>
+                <TouchableOpacity style={[styles.settingItem, darkMode && styles.settingItemDark]}>
+                    <Text style={[styles.settingText, darkMode && styles.settingTextDark]}>Language</Text>
                     <View style={styles.settingValue}>
-                        <Text style={styles.settingValueText}>English</Text>
-                        <Text style={styles.arrow}>›</Text>
+                        <Text style={[styles.settingValueText, darkMode && styles.settingValueTextDark]}>English</Text>
+                        <Text style={[styles.arrow, darkMode && styles.arrowDark]}>›</Text>
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.settingItem}>
-                    <Text style={styles.settingText}>Currency</Text>
+                <TouchableOpacity style={[styles.settingItem, darkMode && styles.settingItemDark]}>
+                    <Text style={[styles.settingText, darkMode && styles.settingTextDark]}>Currency</Text>
                     <View style={styles.settingValue}>
-                        <Text style={styles.settingValueText}>DKK</Text>
-                        <Text style={styles.arrow}>›</Text>
+                        <Text style={[styles.settingValueText, darkMode && styles.settingValueTextDark]}>DKK</Text>
+                        <Text style={[styles.arrow, darkMode && styles.arrowDark]}>›</Text>
                     </View>
                 </TouchableOpacity>
-                <View style={styles.settingItem}>
-                    <Text style={styles.settingText}>Dark Mode</Text>
+                <View style={[styles.settingItem, darkMode && styles.settingItemDark]}>
+                    <Text style={[styles.settingText, darkMode && styles.settingTextDark]}>Dark Mode</Text>
                     <Switch
                         value={darkMode}
                         onValueChange={setDarkMode}
@@ -103,8 +103,8 @@ const SettingsScreen: React.FC = () => {
                         thumbColor={darkMode ? '#fff' : '#f4f3f4'}
                     />
                 </View>
-                <View style={styles.settingItem}>
-                    <Text style={styles.settingText}>Auto-save Searches</Text>
+                <View style={[styles.settingItem, darkMode && styles.settingItemDark]}>
+                    <Text style={[styles.settingText, darkMode && styles.settingTextDark]}>Auto-save Searches</Text>
                     <Switch
                         value={autoSave}
                         onValueChange={setAutoSave}
@@ -114,39 +114,39 @@ const SettingsScreen: React.FC = () => {
                 </View>
             </View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Support</Text>
-                <TouchableOpacity style={styles.settingItem}>
-                    <Text style={styles.settingText}>Help Center</Text>
-                    <Text style={styles.arrow}>›</Text>
+            <View style={[styles.section, darkMode && styles.sectionDark]}>
+                <Text style={[styles.sectionTitle, darkMode && styles.sectionTitleDark]}>Support</Text>
+                <TouchableOpacity style={[styles.settingItem, darkMode && styles.settingItemDark]}>
+                    <Text style={[styles.settingText, darkMode && styles.settingTextDark]}>Help Center</Text>
+                    <Text style={[styles.arrow, darkMode && styles.arrowDark]}>›</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.settingItem}>
-                    <Text style={styles.settingText}>Contact Us</Text>
-                    <Text style={styles.arrow}>›</Text>
+                <TouchableOpacity style={[styles.settingItem, darkMode && styles.settingItemDark]}>
+                    <Text style={[styles.settingText, darkMode && styles.settingTextDark]}>Contact Us</Text>
+                    <Text style={[styles.arrow, darkMode && styles.arrowDark]}>›</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.settingItem}>
-                    <Text style={styles.settingText}>Terms & Conditions</Text>
-                    <Text style={styles.arrow}>›</Text>
+                <TouchableOpacity style={[styles.settingItem, darkMode && styles.settingItemDark]}>
+                    <Text style={[styles.settingText, darkMode && styles.settingTextDark]}>Terms & Conditions</Text>
+                    <Text style={[styles.arrow, darkMode && styles.arrowDark]}>›</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.settingItem}>
-                    <Text style={styles.settingText}>Privacy Policy</Text>
-                    <Text style={styles.arrow}>›</Text>
+                <TouchableOpacity style={[styles.settingItem, darkMode && styles.settingItemDark]}>
+                    <Text style={[styles.settingText, darkMode && styles.settingTextDark]}>Privacy Policy</Text>
+                    <Text style={[styles.arrow, darkMode && styles.arrowDark]}>›</Text>
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>About</Text>
-                <TouchableOpacity style={styles.settingItem}>
-                    <Text style={styles.settingText}>Version</Text>
-                    <Text style={styles.settingValueText}>1.0.0</Text>
+            <View style={[styles.section, darkMode && styles.sectionDark]}>
+                <Text style={[styles.sectionTitle, darkMode && styles.sectionTitleDark]}>About</Text>
+                <TouchableOpacity style={[styles.settingItem, darkMode && styles.settingItemDark]}>
+                    <Text style={[styles.settingText, darkMode && styles.settingTextDark]}>Version</Text>
+                    <Text style={[styles.settingValueText, darkMode && styles.settingValueTextDark]}>1.0.0</Text>
                 </TouchableOpacity>
             </View>
 
             <View style={styles.actionSection}>
-                <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-                    <Text style={styles.signOutText}>Sign Out</Text>
+                <TouchableOpacity style={[styles.signOutButton, darkMode && styles.signOutButtonDark]} onPress={handleSignOut}>
+                    <Text style={[styles.signOutText, darkMode && styles.signOutTextDark]}>Sign Out</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
+                <TouchableOpacity style={[styles.deleteButton, darkMode && styles.deleteButtonDark]} onPress={handleDeleteAccount}>
                     <Text style={styles.deleteText}>Delete Account</Text>
                 </TouchableOpacity>
             </View>
@@ -159,6 +159,9 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f5f5f5',
     },
+    containerDark: {
+        backgroundColor: '#000000',
+    },
     header: {
         backgroundColor: '#fff',
         padding: 20,
@@ -167,10 +170,17 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#e0e0e0',
     },
+    headerDark: {
+        backgroundColor: '#1c1c1e',
+        borderBottomColor: '#38383a',
+    },
     headerTitle: {
         fontSize: 24,
         fontWeight: 'bold',
         color: '#333',
+    },
+    headerTitleDark: {
+        color: '#ffffff',
     },
     section: {
         backgroundColor: '#fff',
@@ -179,6 +189,9 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         paddingVertical: 10,
     },
+    sectionDark: {
+        backgroundColor: '#1c1c1e',
+    },
     sectionTitle: {
         fontSize: 14,
         color: '#999',
@@ -186,6 +199,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 10,
         textTransform: 'uppercase',
+    },
+    sectionTitleDark: {
+        color: '#8e8e93',
     },
     settingItem: {
         flexDirection: 'row',
@@ -196,9 +212,15 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#f0f0f0',
     },
+    settingItemDark: {
+        borderBottomColor: '#38383a',
+    },
     settingText: {
         fontSize: 16,
         color: '#333',
+    },
+    settingTextDark: {
+        color: '#ffffff',
     },
     settingValue: {
         flexDirection: 'row',
@@ -209,9 +231,15 @@ const styles = StyleSheet.create({
         color: '#666',
         marginRight: 5,
     },
+    settingValueTextDark: {
+        color: '#8e8e93',
+    },
     arrow: {
         fontSize: 20,
         color: '#999',
+    },
+    arrowDark: {
+        color: '#8e8e93',
     },
     actionSection: {
         marginTop: 30,
@@ -225,10 +253,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 15,
     },
+    signOutButtonDark: {
+        backgroundColor: '#ffffff',
+    },
     signOutText: {
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
+    },
+    signOutTextDark: {
+        color: '#000000',
     },
     deleteButton: {
         backgroundColor: '#fff',
@@ -237,6 +271,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: 1,
         borderColor: '#ff3b30',
+    },
+    deleteButtonDark: {
+        backgroundColor: '#1c1c1e',
     },
     deleteText: {
         color: '#ff3b30',
