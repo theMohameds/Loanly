@@ -34,8 +34,8 @@ function MainTabs() {
 
 function ProfileStack() {
     return (
-        <Stack.Navigator>
-            <Stack.Screen name="Profile" component={Profile} />
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+            <Stack.Screen name="Profile" component={Profile}  />
             <Stack.Screen name="Settings" component={SettingsScreen} />
         </Stack.Navigator>
     );
