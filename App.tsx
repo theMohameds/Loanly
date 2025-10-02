@@ -96,7 +96,7 @@ function RentalStack() {
             }}
         >
             <Stack.Screen name="RentalSearch" component={RentalSearchScreen}
-                          options={({ navigation }) => ({
+                          options={({navigation}) => ({
                               title: "",
                               headerLeft: () => (
                                   <TouchableOpacity onPress={() => navigation.navigate("MainTabs")} style={{ flexDirection: "row", alignItems: "center",}}
@@ -114,10 +114,10 @@ function RentalStack() {
 }
 
 export default function App() {
-    const isLoggedIn = true;
+    const isLoggedIn = false;
 
     return (
-        <NavigationContainer op>
+        <NavigationContainer>
             <StatusBar barStyle="light-content" backgroundColor="#000" />
             {isLoggedIn ? (
                 <Stack.Navigator screenOptions={{ headerShown: false }}>
