@@ -28,8 +28,14 @@ function MainTabs() {
             headerStyle: { backgroundColor: "#000" },
             headerTintColor: "#fff",
             headerShown: false,
+            tabBarStyle: {
+                backgroundColor: "#000",
+                borderTopColor: "transparent",
+            },
+            tabBarActiveTintColor: "#fff",
+            tabBarInactiveTintColor: "gray",
         }}>
-            <Tab.Screen name="MainMenu" component={HomeScreen} />
+            <Tab.Screen name="MainMenu" component={HomeScreen} options={{title: "Home" }} />
             <Tab.Screen name="Bookings" component={BookingsStack} options={{ title: "Bookings"}} />
             <Tab.Screen name="ProfileStack" component={ProfileStack} options={{ title: "Profile" }} />
             <Tab.Screen name="SettingsStack" component={SettingsStack} options={{ title: "Settings" }} />
@@ -72,10 +78,17 @@ function BookingsStack() {
                 headerTintColor: "#fff",
             }}
         >
-            <Stack.Screen
-                name="BookingsList"
-                component={BookingsScreen}
-                options={{ title: "" }}
+            <Stack.Screen name="BookingsList" component={BookingsScreen}
+                options={({ navigation }) => ({
+                    title: "",
+                    headerLeft: () => (
+                        <TouchableOpacity onPress={() => navigation.navigate("MainMenu")} style={{ flexDirection: "row", alignItems: "center",}}
+                        >
+                            <Ionicons name="chevron-back" size={24} color="#fff" />
+                            <Text style={{ color: "#fff", fontSize: 17, marginLeft: 0 }}>Back</Text>
+                        </TouchableOpacity>
+                    ),
+                })}
             />
             <Stack.Screen
                 name="BookingDetails"
@@ -118,7 +131,7 @@ export default function App() {
 
     return (
         <NavigationContainer op>
-            <StatusBar barStyle="light-content" backgroundColor="#000" />
+            <StatusBar barStyle="dark-content" backgroundColor="#000" />
             {isLoggedIn ? (
                 <Stack.Navigator screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="MainTabs" component={MainTabs} />
