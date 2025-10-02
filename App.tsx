@@ -5,8 +5,12 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar, TouchableOpacity, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import LoginScreen from './frontend/login/LoginScreen';
+
+import LoginOptionsScreen from './frontend/login/LoginOptionsScreen';
+import EmailLoginScreen from './frontend/login/EmailLoginScreen';
 import MainMenuScreen from './frontend/main_menu/MainMenuScreen';
+import HomeScreen from './frontend/main_menu/HomeScreen';
+
 import BookingsScreen from './frontend/bookings/BookingsScreen';
 import BookingDetailsScreen from './frontend/bookings/BookingDetailsScreen';
 import Profile from './frontend/settings_and_profile/Profile';
@@ -29,7 +33,6 @@ function MainTabs() {
             <Tab.Screen name="Bookings" component={BookingsStack} options={{ title: "Bookings"}} />
             <Tab.Screen name="ProfileStack" component={ProfileStack} options={{ title: "Profile" }} />
             <Tab.Screen name="SettingsStack" component={SettingsStack} options={{ title: "Settings" }} />
-
         </Tab.Navigator>
     );
 }
@@ -94,8 +97,8 @@ function RentalStack() {
                               ),
                           })}
             />
-            <Stack.Screen name="AvailableCars" component={AvailableCarsScreen} options={{ title: "" }}/>
-            <Stack.Screen name="Confirmation" component={ConfirmationScreen} options={{ title: "" }}/>
+            <Stack.Screen name="AvailableCars" component={AvailableCarsScreen} options={{ title: "" }} />
+            <Stack.Screen name="Confirmation" component={ConfirmationScreen} options={{ title: "" }} />
         </Stack.Navigator>
     );
 }
