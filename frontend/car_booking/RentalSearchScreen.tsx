@@ -59,10 +59,10 @@ export default function RentalSearchScreen({ navigation }: Props) {
                         >
                             <Text style={styles.header}>SELECT INFO</Text>
 
-                            {/* Cards row */}
-                            <View style={styles.row}>
+                            {/* Date pickers stacked */}
+                            <View style={styles.dateWrapper}>
                                 <TouchableOpacity
-                                    style={[styles.card, styles.leftCard]}
+                                    style={styles.card}
                                     onPress={() => setPickupVisible(true)}
                                     activeOpacity={0.9}
                                 >
@@ -137,7 +137,6 @@ export default function RentalSearchScreen({ navigation }: Props) {
                                 />
                             </View>
 
-
                             {/* Confirm dates and location button */}
                             <View style={styles.confirmWrap}>
                                 <TouchableOpacity
@@ -157,7 +156,6 @@ export default function RentalSearchScreen({ navigation }: Props) {
 }
 
 const SIDE = 24;
-const GAP = 14;
 
 const styles = StyleSheet.create({
     background: {
@@ -188,14 +186,13 @@ const styles = StyleSheet.create({
         marginBottom: 28,
     },
 
-    row: {
-        flexDirection: "row",
+    dateWrapper: {
         width: "100%",
         marginBottom: 22,
     },
 
     card: {
-        flex: 1,
+        width: "100%",
         backgroundColor: "rgba(0,0,0,0.82)",
         paddingVertical: 18,
         paddingHorizontal: 16,
@@ -204,10 +201,7 @@ const styles = StyleSheet.create({
         borderColor: "rgba(255,255,255,0.06)",
         minHeight: 92,
         justifyContent: "center",
-    },
-
-    leftCard: {
-        marginRight: GAP
+        marginBottom: 14
     },
 
     cardLabel: {
@@ -256,6 +250,7 @@ const styles = StyleSheet.create({
         shadowRadius: 12,
         elevation: 6,
     },
+
     confirmText: {
         color: "#151515",
         fontSize: 18,
