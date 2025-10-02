@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, ImageBackground } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import {useNavigation} from "@react-navigation/native";
 
 export default function HomeScreen() {
+    const navigation = useNavigation();
     return (
         <ImageBackground
             source={require('../assets/background.png')}
@@ -18,11 +20,11 @@ export default function HomeScreen() {
 
                 {/* Buttons */}
                 <View style={styles.center}>
-                    <Pressable style={styles.button}>
-                        <Text style={styles.buttonText}>🚗 Rent Car</Text>
+                    <Pressable style={styles.button} onPress={() => navigation.navigate("Rental")} >
+                        <Text style={styles.buttonText}>Rent Car</Text>
                     </Pressable>
-                    <Pressable style={styles.button}>
-                        <Text style={styles.buttonText}>🔖 Bookings</Text>
+                    <Pressable style={styles.button} onPress={() => navigation.navigate("Bookings")}>
+                        <Text style={styles.buttonText}>Bookings</Text>
                     </Pressable>
                 </View>
             </View>
@@ -39,16 +41,17 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
     },
-    logo: { fontSize: 32, fontWeight: '800', color: 'white' },
-    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    logo: { fontSize: 48, fontWeight: '800', color: 'white', paddingHorizontal: 15},
+    center: { flex: 1, justifyContent: 'flex-end', alignItems: 'center', marginBottom: 60 },
     button: {
         backgroundColor: 'black',
         borderRadius: 8,
-        paddingVertical: 14,
-        paddingHorizontal: 60,
+        paddingVertical: 20,
+        paddingHorizontal: 100,
         borderWidth: 1,
         borderColor: 'white',
         marginVertical: 10,
+        opacity: 0.85,
     },
-    buttonText: { color: 'white', fontSize: 16, fontWeight: '600' },
+    buttonText: { color: 'white', fontSize: 18, fontWeight: '600' },
 });

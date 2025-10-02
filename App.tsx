@@ -29,11 +29,21 @@ function MainTabs() {
             headerTintColor: "#fff",
             headerShown: false,
         }}>
-            <Tab.Screen name="MainMenu" component={MainMenuScreen} />
+            <Tab.Screen name="MainMenu" component={HomeScreen} />
             <Tab.Screen name="Bookings" component={BookingsStack} options={{ title: "Bookings"}} />
             <Tab.Screen name="ProfileStack" component={ProfileStack} options={{ title: "Profile" }} />
             <Tab.Screen name="SettingsStack" component={SettingsStack} options={{ title: "Settings" }} />
         </Tab.Navigator>
+    );
+}
+
+function LoginStack() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="StartScreen" component={MainMenuScreen} />
+            <Stack.Screen name="LoginOptions" component={LoginOptionsScreen} />
+            <Stack.Screen name="EmailLogin" component={EmailLoginScreen} />
+        </Stack.Navigator>
     );
 }
 
@@ -107,7 +117,7 @@ export default function App() {
     const isLoggedIn = true;
 
     return (
-        <NavigationContainer>
+        <NavigationContainer op>
             <StatusBar barStyle="light-content" backgroundColor="#000" />
             {isLoggedIn ? (
                 <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -115,9 +125,7 @@ export default function App() {
                     <Stack.Screen name="Rental" component={RentalStack} />
                 </Stack.Navigator>
             ) : (
-                <Stack.Navigator>
-                    <Stack.Screen name="Login" component={LoginScreen} />
-                </Stack.Navigator>
+                <LoginStack />
             )}
         </NavigationContainer>
     );
