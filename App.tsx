@@ -5,7 +5,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar, TouchableOpacity, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-
 import LoginOptionsScreen from './frontend/login/LoginOptionsScreen';
 import EmailLoginScreen from './frontend/login/EmailLoginScreen';
 import MainMenuScreen from './frontend/main_menu/MainMenuScreen';
@@ -18,22 +17,53 @@ import SettingsScreen from './frontend/settings_and_profile/SettingsScreen';
 import RentalSearchScreen from './frontend/car_booking/RentalSearchScreen';
 import AvailableCarsScreen from './frontend/car_booking/AvailableCarsScreen';
 import ConfirmationScreen from "./frontend/car_booking/ConfirmationScreen";
+import AddCarScreen from "./frontend/add_car_to_fleet/AddCarScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function MainTabs() {
     return (
-        <Tab.Navigator screenOptions={{
-            headerStyle: { backgroundColor: "#000" },
-            headerTintColor: "#fff",
-            headerShown: false,
-        }}>
-            <Tab.Screen name="MainMenu" component={HomeScreen} />
-            <Tab.Screen name="Bookings" component={BookingsStack} options={{ title: "Bookings"}} />
-            <Tab.Screen name="ProfileStack" component={ProfileStack} options={{ title: "Profile" }} />
-            <Tab.Screen name="SettingsStack" component={SettingsStack} options={{ title: "Settings" }} />
+        <Tab.Navigator
+            screenOptions={{
+                headerStyle: { backgroundColor: "#000" },
+                headerTintColor: "#fff",
+                headerShown: false,
+                tabBarStyle: {
+                    backgroundColor: "#000",
+                    borderTopColor: "transparent",
+                },
+                tabBarActiveTintColor: "#fff",
+                tabBarInactiveTintColor: "gray",
+            }}
+        >
+            <Tab.Screen name="MainMenu" component={HomeScreen} options={{title: "Home", tabBarIcon: ({ color, size }) => (<Ionicons name="home" color={color} size={size} />),}}/>
+            <Tab.Screen name="Bookings" component={BookingsStack} options={{title: "Bookings", tabBarIcon: ({ color, size }) => (<Ionicons name="calendar" color={color} size={size} />),}}/>
+            <Tab.Screen name="ProfileStack" component={ProfileStack} options={{title: "Profile", tabBarIcon: ({ color, size }) => (<Ionicons name="person" color={color} size={size} />),}}/>
+            <Tab.Screen name="SettingsStack" component={SettingsStack} options={{title: "Settings", tabBarIcon: ({ color, size }) => (<Ionicons name="settings" color={color} size={size} />),}}/>
         </Tab.Navigator>
+    );
+}
+
+
+function AddCarStack() {
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerStyle: { backgroundColor: "#000" },
+                headerTintColor: "#fff",}}
+        >
+            <Stack.Screen name="AddCar" component={AddCarScreen} options={({ navigation }) => ({
+                title: "",
+                headerLeft: () => (
+                    <TouchableOpacity onPress={() => navigation.navigate("MainMenu")} style={{ flexDirection: "row", alignItems: "center",}}
+                    >
+                        <Ionicons name="chevron-back" size={24} color="#fff" />
+                        <Text style={{ color: "#fff", fontSize: 17, marginLeft: 0 }}>Back</Text>
+                    </TouchableOpacity>
+                ),
+            })}/>
+        </Stack.Navigator>
     );
 }
 
@@ -72,10 +102,17 @@ function BookingsStack() {
                 headerTintColor: "#fff",
             }}
         >
-            <Stack.Screen
-                name="BookingsList"
-                component={BookingsScreen}
-                options={{ title: "" }}
+            <Stack.Screen name="BookingsList" component={BookingsScreen}
+                options={({ navigation }) => ({
+                    title: "",
+                    headerLeft: () => (
+                        <TouchableOpacity onPress={() => navigation.navigate("MainMenu")} style={{ flexDirection: "row", alignItems: "center",}}
+                        >
+                            <Ionicons name="chevron-back" size={24} color="#fff" />
+                            <Text style={{ color: "#fff", fontSize: 17, marginLeft: 0 }}>Back</Text>
+                        </TouchableOpacity>
+                    ),
+                })}
             />
             <Stack.Screen
                 name="BookingDetails"
@@ -117,12 +154,13 @@ export default function App() {
     const isLoggedIn = true;
 
     return (
-        <NavigationContainer>
-            <StatusBar barStyle="light-content" backgroundColor="#000" />
+        <NavigationContainer op>
+            <StatusBar barStyle="dark-content" backgroundColor="#000" />
             {isLoggedIn ? (
                 <Stack.Navigator screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="MainTabs" component={MainTabs} />
                     <Stack.Screen name="Rental" component={RentalStack} />
+                    <Stack.Screen name="AddCar" component={AddCarScreen} />
                 </Stack.Navigator>
             ) : (
                 <LoginStack />

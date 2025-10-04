@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)" },
     overlay: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.7)",
+        backgroundColor: "rgba(0,0,0,0.0)",
         padding: 16,
     },
 

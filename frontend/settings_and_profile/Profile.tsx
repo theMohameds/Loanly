@@ -41,10 +41,10 @@ const ProfileScreen: React.FC = () => {
     const [showAddPayment, setShowAddPayment] = useState(false);
 
     const [profile, setProfile] = useState<UserProfile>({
-        name: 'John Doe',
-        email: 'john.doe@email.com',
+        name: 'Jacob Donut',
+        email: 'jacob9@email.com',
         phone: '+45 12345678',
-        address: 'Copenhagen, Denmark',
+        address: 'Odense, Denmark',
     });
 
     const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
