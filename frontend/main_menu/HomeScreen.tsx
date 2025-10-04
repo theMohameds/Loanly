@@ -23,8 +23,8 @@ export default function HomeScreen() {
                     <Pressable style={styles.button} onPress={() => navigation.navigate("Rental")} >
                         <Text style={styles.buttonText}>Rent Car</Text>
                     </Pressable>
-                    <Pressable style={styles.button} onPress={() => navigation.navigate("Bookings")}>
-                        <Text style={styles.buttonText}>Bookings</Text>
+                    <Pressable style={styles.button} onPress={() => navigation.navigate("AddCar")}>
+                        <Text style={styles.buttonText}>Rent out your car</Text>
                     </Pressable>
                 </View>
             </View>
@@ -41,17 +41,31 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
     },
-    logo: { fontSize: 48, fontWeight: '800', color: 'white', paddingHorizontal: 15},
-    center: { flex: 1, justifyContent: 'flex-end', alignItems: 'center', marginBottom: 60 },
+    logo: {
+        fontSize: 48,
+        fontWeight: '800',
+        color: 'white',
+        paddingHorizontal: 15,
+    },
+    center: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        marginBottom: 60,
+    },
     button: {
-        backgroundColor: 'black',
-        borderRadius: 8,
-        paddingVertical: 20,
-        paddingHorizontal: 100,
+        width: '85%',
+        backgroundColor: 'rgba(0,0,0,0.85)',
+        borderRadius: 12,
+        paddingVertical: 18,
+        alignItems: 'center',
         borderWidth: 1,
         borderColor: 'white',
         marginVertical: 10,
-        opacity: 0.85,
     },
-    buttonText: { color: 'white', fontSize: 18, fontWeight: '600' },
+    buttonText: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: '600',
+    },
 });
