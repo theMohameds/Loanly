@@ -1,144 +1,108 @@
-import React from "react";
-import {View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ImageBackground } from "react-native";
-
-//TEMPORARY CAR DATA! SKAL SKIFTES MED API
-const cars = [
-    {
-        id: "1",
-        name: "TESLA MODEL 3",
-        rating: 4.7,
-        reviews: 15,
-        type: "Electric",
-        location: "5000, Odense",
-        price: "DKK 470 per day",
-        image: require("../assets/tesla3.png"),
-    },
-    {
-        id: "2",
-        name: "BMW i4 eDrive40",
-        rating: 4.6,
-        reviews: 18,
-        type: "Electric",
-        location: "5000, Odense",
-        price: "DKK 520 per day",
-        image: require("../assets/bmw-i4.png"),
-    },
-    {
-        id: "3",
-        name: "AUDI e-tron GT",
-        rating: 4.8,
-        reviews: 22,
-        type: "Electric",
-        location: "5000, Odense",
-        price: "DKK 640 per day",
-        image: require("../assets/audi-etron-gt.png"),
-    },
-    {
-        id: "4",
-        name: "FORD TRANSIT VAN",
-        rating: 4.4,
-        reviews: 11,
-        type: "Gasoline",
-        location: "5000, Odense",
-        price: "DKK 430 per day",
-        image: require("../assets/ford-transit.png"),
-    },
-    {
-        id: "5",
-        name: "POLESTAR 2",
-        rating: 4.6,
-        reviews: 17,
-        type: "Electric",
-        location: "5000, Odense",
-        price: "DKK 490 per day",
-        image: require("../assets/polestar-2.png"),
-    },
-];
-
-
+import React, { useEffect, useState } from "react";
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ImageBackground } from "react-native";
+import { loadCars } from "../../services/carsDB";  // <-- import your DB loader
 
 export default function AvailableCarsScreen({ route, navigation }: any) {
-    const { location, pickupDate, dropoffDate } = route.params ?? {};
+  const { location, pickupDate, dropoffDate } = route.params ?? {};
+  const [cars, setCars] = useState<any[]>([]);   // state for DB cars
 
-    const formatShort = (iso?: string) =>
-        iso ? new Date(iso).toLocaleString(undefined, {
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-            })
-            : "";
+  // Load cars when screen mounts
+  useEffect(() => {
+    async function fetchCarsFromDB() {
+      try {
+        const dbCars = await loadCars();
+        setCars(dbCars);
+      } catch (error) {
+        console.error("Error loading cars from DB:", error);
+      }
+    }
+    fetchCarsFromDB();
+  }, []);
 
-    return (
-        <ImageBackground
-            source={require("../assets/background.png")}
-            style={styles.background}
-            imageStyle={styles.imageStyle}
-        >
-            <View style={styles.overlay}>
-                {/* Header */}
-                <View style={styles.headerBox}>
-                    <Text style={styles.header}>SELECT CAR</Text>
-                    <Text style={styles.metaText}>{location ?? "—"}</Text>
-                    <Text style={styles.metaText}>
-                        {pickupDate && dropoffDate
-                            ? `${formatShort(pickupDate)}  —  ${formatShort(dropoffDate)}`
-                            : "Dates not set"}
-                    </Text>
+  const formatShort = (iso?: string) =>
+    iso
+      ? new Date(iso).toLocaleString(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "";
+
+  return (
+    <ImageBackground
+      source={require("../assets/background.png")}
+      style={styles.background}
+      imageStyle={styles.imageStyle}
+    >
+      <View style={styles.overlay}>
+        {/* Header */}
+        <View style={styles.headerBox}>
+          <Text style={styles.header}>SELECT CAR</Text>
+          <Text style={styles.metaText}>{location ?? "—"}</Text>
+          <Text style={styles.metaText}>
+            {pickupDate && dropoffDate
+              ? `${formatShort(pickupDate)}  —  ${formatShort(dropoffDate)}`
+              : "Dates not set"}
+          </Text>
+        </View>
+
+        {/* Car List */}
+        <FlatList
+          data={cars}
+          keyExtractor={(i) => i.id?.toString()}   // id is integer in DB
+          contentContainerStyle={{ paddingBottom: 28 }}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              {/* If you don't store images in DB, use placeholder */}
+              <Image
+                source={require("../assets/placeholderimage.png")} 
+                style={styles.image}
+              />
+
+              <View style={styles.info}>
+                <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
+                  {item.make} {item.model}
+                </Text>
+
+                <View style={styles.specRow}>
+                  <Text style={styles.tag}>{item.year}</Text>
+                  <Text style={styles.dot}>•</Text>
+                  <Text style={styles.tag}>{item.color ?? "N/A"}</Text>
                 </View>
 
-                {/* Car List */}
-                <FlatList
-                    data={cars}
-                    keyExtractor={(i) => i.id}
-                    contentContainerStyle={{ paddingBottom: 28 }}
-                    renderItem={({ item }) => (
-                        <View style={styles.card}>
-                            <Image source={item.image} style={styles.image} />
+                <Text style={styles.location}>📍 {location ?? "Unknown"}</Text>
 
-                            <View style={styles.info}>
-                                <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
-                                    {item.name}
-                                </Text>
+                <View style={styles.actionRow}>
+                  <View style={styles.pricePill}>
+                    <Text style={styles.pricePillText}>
+                      DKK {item.pricePerDay} per day
+                    </Text>
+                  </View>
 
-                                <View style={styles.specRow}>
-                                    <Text style={styles.tag}>
-                                        ⭐ {item.rating} ({item.reviews})
-                                    </Text>
-                                    <Text style={styles.dot}>•</Text>
-                                    <Text style={styles.tag}>{item.type}</Text>
-                                </View>
-
-                                <Text style={styles.location}>📍 {item.location}</Text>
-
-                                <View style={styles.actionRow}>
-                                    <View style={styles.pricePill}>
-                                        <Text style={styles.pricePillText}>{item.price}</Text>
-                                    </View>
-
-                                    <TouchableOpacity
-                                        style={styles.selectBtn}
-                                        onPress={() =>
-                                            navigation.navigate("Confirmation", {
-                                                car: item,
-                                                location,
-                                                pickupDate,
-                                                dropoffDate,
-                                            })
-                                        }
-                                    >
-                                        <Text style={styles.selectText}>Select</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </View>
-                    )}
-                />
-
+                  <TouchableOpacity
+                    style={styles.selectBtn}
+                    onPress={() =>
+                      navigation.navigate("Confirmation", {
+                        car: item,
+                        location,
+                        pickupDate,
+                        dropoffDate,
+                      })
+                    }
+                  >
+                    <Text style={styles.selectText}>Select</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
-        </ImageBackground>
-    );
+          )}
+        />
+      </View>
+    </ImageBackground>
+  );
 }
+
 
 const SIDE = 16;
 
