@@ -15,6 +15,10 @@ import {
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import * as ImagePicker from "expo-image-picker";
 
+// 🔑 Import DB save function
+import { addCar } from "../../services/carsDB";
+import { Car } from "../../types/Car";
+
 type Props = { navigation: any };
 
 export default function AddCarScreen({ navigation }: Props) {
@@ -64,14 +68,31 @@ export default function AddCarScreen({ navigation }: Props) {
             })
             : "";
 
-    const confirmCar = () => {
+    // ✅ Save car into DB
+    const confirmCar = async () => {
         if (!make || !model || !year || !licensePlate || !pricePerDay || !availabilityStart || !availabilityEnd) {
             alert("Please fill in all fields.");
             return;
         }
 
-        navigation.goBack();
-        alert("Car added to fleet successfully!");
+        try {
+            const newCar: Car = {
+                id: 0, // auto-increment in DB
+                make,
+                model,
+                year: parseInt(year),
+                color: "Unknown", // you can add color input if needed
+                pricePerDay: parseFloat(pricePerDay),
+                isAvailable: true,
+            };
+
+            await addCar(newCar);   // 🔑 Save to DB
+            navigation.goBack();
+            alert("Car added to fleet successfully!");
+        } catch (error) {
+            console.error("Failed to add car:", error);
+            alert("Error saving car.");
+        }
     };
 
     return (
@@ -251,6 +272,7 @@ export default function AddCarScreen({ navigation }: Props) {
         </ImageBackground>
     );
 }
+
 
 const SIDE = 24;
 
