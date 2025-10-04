@@ -1,8 +1,23 @@
 import { registerRootComponent } from 'expo';
-
 import App from './App';
 
-// registerRootComponent calls AppRegistry.registerComponent('main', () => App);
-// It also ensures that whether you load the app in Expo Go or in a native build,
-// the environment is set up appropriately
+import { getCarsFromAPI } from './services/api';
+import { createCarsTable, saveCars, clearCars, loadCars } from './services/carsDB';
+
+async function initDummyData() {
+  try {
+    await createCarsTable();     
+    await clearCars();           
+    const cars = await getCarsFromAPI();   
+    await saveCars(cars);         
+    
+    //const storedCars = await loadCars();
+    //console.log("Cars in DB:", storedCars);
+  } catch (error) {
+    console.error("Failed to init cars:", error);
+  }
+}
+
+
+initDummyData();
 registerRootComponent(App);
