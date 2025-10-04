@@ -154,7 +154,7 @@ export default function App() {
     const isLoggedIn = true;
 
     return (
-        <NavigationContainer op>
+        <NavigationContainer>
             <StatusBar barStyle="dark-content" backgroundColor="#000" />
             {isLoggedIn ? (
                 <Stack.Navigator screenOptions={{ headerShown: false }}>
