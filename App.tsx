@@ -30,17 +30,17 @@ function MainTabs() {
                 headerTintColor: "#fff",
                 headerShown: false,
                 tabBarStyle: {
-                    backgroundColor: "#000",
+                    backgroundColor: "#101010",
                     borderTopColor: "transparent",
                 },
                 tabBarActiveTintColor: "#fff",
-                tabBarInactiveTintColor: "gray",
+                tabBarInactiveTintColor: "#909090",
             }}
         >
-            <Tab.Screen name="MainMenu" component={HomeScreen} options={{title: "Home", tabBarIcon: ({ color, size }) => (<Ionicons name="home" color={color} size={size} />),}}/>
-            <Tab.Screen name="Bookings" component={BookingsStack} options={{title: "Bookings", tabBarIcon: ({ color, size }) => (<Ionicons name="calendar" color={color} size={size} />),}}/>
-            <Tab.Screen name="ProfileStack" component={ProfileStack} options={{title: "Profile", tabBarIcon: ({ color, size }) => (<Ionicons name="person" color={color} size={size} />),}}/>
-            <Tab.Screen name="SettingsStack" component={SettingsStack} options={{title: "Settings", tabBarIcon: ({ color, size }) => (<Ionicons name="settings" color={color} size={size} />),}}/>
+            <Tab.Screen name="MainMenu" component={HomeScreen} options={{ title: "Home", tabBarIcon: ({ color, size }) => (<Ionicons name="home" color={color} size={size} />), }} />
+            <Tab.Screen name="Bookings" component={BookingsStack} options={{ title: "Bookings", tabBarIcon: ({ color, size }) => (<Ionicons name="calendar" color={color} size={size} />), }} />
+            <Tab.Screen name="ProfileStack" component={ProfileStack} options={{ title: "Profile", tabBarIcon: ({ color, size }) => (<Ionicons name="person" color={color} size={size} />), }} />
+            <Tab.Screen name="SettingsStack" component={SettingsStack} options={{ title: "Settings", tabBarIcon: ({ color, size }) => (<Ionicons name="settings" color={color} size={size} />), }} />
         </Tab.Navigator>
     );
 }
@@ -51,18 +51,19 @@ function AddCarStack() {
         <Stack.Navigator
             screenOptions={{
                 headerStyle: { backgroundColor: "#000" },
-                headerTintColor: "#fff",}}
+                headerTintColor: "#fff",
+            }}
         >
             <Stack.Screen name="AddCar" component={AddCarScreen} options={({ navigation }) => ({
                 title: "",
                 headerLeft: () => (
-                    <TouchableOpacity onPress={() => navigation.navigate("MainMenu")} style={{ flexDirection: "row", alignItems: "center",}}
+                    <TouchableOpacity onPress={() => navigation.navigate("MainMenu")} style={{ flexDirection: "row", alignItems: "center", }}
                     >
                         <Ionicons name="chevron-back" size={24} color="#fff" />
                         <Text style={{ color: "#fff", fontSize: 17, marginLeft: 0 }}>Back</Text>
                     </TouchableOpacity>
                 ),
-            })}/>
+            })} />
         </Stack.Navigator>
     );
 }
@@ -79,15 +80,15 @@ function LoginStack() {
 
 function ProfileStack() {
     return (
-        <Stack.Navigator screenOptions={{headerShown: false}}>
-            <Stack.Screen name="Profile" component={Profile}  />
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Profile" component={Profile} />
         </Stack.Navigator>
     );
 }
 
 function SettingsStack() {
     return (
-        <Stack.Navigator screenOptions={{headerShown: false}}>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Settings" component={SettingsScreen} />
         </Stack.Navigator>
     );
@@ -106,7 +107,7 @@ function BookingsStack() {
                 options={({ navigation }) => ({
                     title: "",
                     headerLeft: () => (
-                        <TouchableOpacity onPress={() => navigation.navigate("MainMenu")} style={{ flexDirection: "row", alignItems: "center",}}
+                        <TouchableOpacity onPress={() => navigation.navigate("MainMenu")} style={{ flexDirection: "row", alignItems: "center", }}
                         >
                             <Ionicons name="chevron-back" size={24} color="#fff" />
                             <Text style={{ color: "#fff", fontSize: 17, marginLeft: 0 }}>Back</Text>
@@ -124,27 +125,49 @@ function BookingsStack() {
 }
 
 
-function RentalStack() {
+function RentalStack({ route }: any) {
+    const { location, pickupDate, dropoffDate } = route.params ?? {};
     return (
         <Stack.Navigator
             screenOptions={{
-                headerStyle: { backgroundColor: "#000" },
+                headerStyle: { backgroundColor: "#212121ff", },
                 headerTintColor: "#fff",
             }}
         >
-            <Stack.Screen name="RentalSearch" component={RentalSearchScreen}
-                          options={({navigation}) => ({
-                              title: "",
-                              headerLeft: () => (
-                                  <TouchableOpacity onPress={() => navigation.navigate("MainTabs")} style={{ flexDirection: "row", alignItems: "center",}}
-                                  >
-                                      <Ionicons name="chevron-back" size={24} color="#fff" />
-                                      <Text style={{ color: "#fff", fontSize: 17, marginLeft: 0 }}>Back</Text>
-                                  </TouchableOpacity>
-                              ),
-                          })}
+            <Stack.Screen
+                name="RentalSearch"
+                component={RentalSearchScreen}
+                options={({ navigation }) => ({
+                    title: "Search",
+                    headerTitleAlign: "center",
+                    headerLeft: () => (
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("MainTabs")}
+                            style={{ flexDirection: "row", alignItems: "center", }}
+                        >
+                            <Ionicons name="chevron-back" size={24} color="#fff" />
+                            <Text style={{ color: "#fff", fontSize: 17, marginLeft: 0 }}></Text>
+                        </TouchableOpacity>
+                    ),
+                })}
             />
-            <Stack.Screen name="AvailableCars" component={AvailableCarsScreen} options={{ title: "" }} />
+            <Stack.Screen
+                name="AvailableCars"
+                component={AvailableCarsScreen}
+                options={({ navigation }) => ({
+                    title: "Available Cars",
+                    headerTitleAlign: "center",
+                    headerLeft: () => (
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("MainTabs")}
+                            style={{ flexDirection: "row", alignItems: "center" }}
+                        >
+                            <Ionicons name="chevron-back" size={24} color="#fff" />
+                            <Text style={{ color: "#fff", fontSize: 17, marginLeft: 0 }}></Text>
+                        </TouchableOpacity>
+                    ),
+                })}
+            />
             <Stack.Screen name="Confirmation" component={ConfirmationScreen} options={{ title: "" }} />
         </Stack.Navigator>
     );

@@ -1,0 +1,122 @@
+[
+  {
+    "make": "MINI",
+    "model": "Cooper SE",
+    "trim": "Essential 3d",
+    "carType": "Hatchback",
+    "fuelType": "Electric",
+    "year": 2023,
+    "seats": 4,
+    "pricePerDay": 470,
+    "pickupLocation": "H.C. Andersen Boulevard 45, 5000 Odense",
+    "dropoffLocation": "H.C. Andersen Boulevard 45, 5000 Odense"
+  },
+  {
+    "make": "Tesla",
+    "model": "Model 3",
+    "trim": "Long Range",
+    "carType": "Sedan",
+    "fuelType": "Electric",
+    "year": 2022,
+    "seats": 5,
+    "pricePerDay": 650,
+    "pickupLocation": "Odense Banegård Center, Østre Stationsvej 27, 5000 Odense",
+    "dropoffLocation": "Odense Banegård Center, Østre Stationsvej 27, 5000 Odense"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "trim": "Life",
+    "carType": "Hatchback",
+    "fuelType": "Petrol",
+    "year": 2021,
+    "seats": 5,
+    "pricePerDay": 350,
+    "pickupLocation": "Sdr. Boulevard 29, 5000 Odense",
+    "dropoffLocation": "Sdr. Boulevard 29, 5000 Odense"
+  },
+  {
+    "make": "BMW",
+    "model": "i3",
+    "trim": "Giga",
+    "carType": "Hatchback",
+    "fuelType": "Electric",
+    "year": 2023,
+    "seats": 4,
+    "pricePerDay": 480,
+    "pickupLocation": "Albani Torv 4, 5000 Odense",
+    "dropoffLocation": "Albani Torv 4, 5000 Odense"
+  },
+  {
+    "make": "Audi",
+    "model": "A3",
+    "trim": "Sportback",
+    "carType": "Hatchback",
+    "fuelType": "Hybrid",
+    "year": 2022,
+    "seats": 5,
+    "pricePerDay": 520,
+    "pickupLocation": "Vindegade 7, 5000 Odense",
+    "dropoffLocation": "Vindegade 7, 5000 Odense"
+  },
+  {
+    "make": "Ford",
+    "model": "Focus",
+    "trim": "ST-Line",
+    "carType": "Hatchback",
+    "fuelType": "Petrol",
+    "year": 2021,
+    "seats": 5,
+    "pricePerDay": 400,
+    "pickupLocation": "Hans Mules Gade 3, 5000 Odense",
+    "dropoffLocation": "Hans Mules Gade 3, 5000 Odense"
+  },
+  {
+    "make": "Toyota",
+    "model": "Corolla",
+    "trim": "GR Sport",
+    "carType": "Sedan",
+    "fuelType": "Hybrid",
+    "year": 2023,
+    "seats": 5,
+    "pricePerDay": 450,
+    "pickupLocation": "Overgade 15, 5000 Odense",
+    "dropoffLocation": "Overgade 15, 5000 Odense"
+  },
+  {
+    "make": "Nissan",
+    "model": "Leaf",
+    "trim": "E+",
+    "carType": "Hatchback",
+    "fuelType": "Electric",
+    "year": 2022,
+    "seats": 5,
+    "pricePerDay": 430,
+    "pickupLocation": "Kongensgade 30, 5000 Odense",
+    "dropoffLocation": "Kongensgade 30, 5000 Odense"
+  },
+  {
+    "make": "Honda",
+    "model": "Civic",
+    "trim": "Sport",
+    "carType": "Sedan",
+    "fuelType": "Petrol",
+    "year": 2021,
+    "seats": 5,
+    "pricePerDay": 410,
+    "pickupLocation": "Sortebrødre Torv 6, 5000 Odense",
+    "dropoffLocation": "Sortebrødre Torv 6, 5000 Odense"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Kona Electric",
+    "trim": "Ultimate",
+    "carType": "SUV",
+    "fuelType": "Electric",
+    "year": 2023,
+    "seats": 5,
+    "pricePerDay": 600,
+    "pickupLocation": "Bispensgade 35, 5000 Odense",
+    "dropoffLocation": "Bispensgade 35, 5000 Odense"
+  }
+]

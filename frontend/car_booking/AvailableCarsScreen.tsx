@@ -1,220 +1,204 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ImageBackground } from "react-native";
-import { loadCars } from "../../services/carsDB";  // <-- import your DB loader
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { loadCars } from "../../backend/database/carsDB";
+import { Ionicons } from "@expo/vector-icons";
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 export default function AvailableCarsScreen({ route, navigation }: any) {
-  const { location, pickupDate, dropoffDate } = route.params ?? {};
-  const [cars, setCars] = useState<any[]>([]);   // state for DB cars
+    const { location, pickupDate, dropoffDate } = route.params ?? {};
+    const [cars, setCars] = useState<any[]>([]);
 
-  // Load cars when screen mounts
-  useEffect(() => {
-    async function fetchCarsFromDB() {
-      try {
-        const dbCars = await loadCars();
-        setCars(dbCars);
-      } catch (error) {
-        console.error("Error loading cars from DB:", error);
-      }
-    }
-    fetchCarsFromDB();
-  }, []);
+    // Load cars when screen mounts
+    useEffect(() => {
+        async function fetchCarsFromDB() {
+            try {
+                const dbCars = await loadCars();
+                setCars(dbCars);
+            } catch (error) {
+                console.error("Error loading cars from DB:", error);
+            }
+        }
+        fetchCarsFromDB();
+    }, []);
 
-  const formatShort = (iso?: string) =>
-    iso
-      ? new Date(iso).toLocaleString(undefined, {
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      : "";
+    const formatShort = (iso?: string) =>
+        iso
+            ? new Date(iso).toLocaleString(undefined, {
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+            })
+            : "";
 
-  return (
-    <ImageBackground
-      source={require("../assets/background.png")}
-      style={styles.background}
-      imageStyle={styles.imageStyle}
-    >
-      <View style={styles.overlay}>
-        {/* Header */}
-        <View style={styles.headerBox}>
-          <Text style={styles.header}>SELECT CAR</Text>
-          <Text style={styles.metaText}>{location ?? "—"}</Text>
-          <Text style={styles.metaText}>
-            {pickupDate && dropoffDate
-              ? `${formatShort(pickupDate)}  —  ${formatShort(dropoffDate)}`
-              : "Dates not set"}
-          </Text>
-        </View>
+    return (
 
-        {/* Car List */}
         <FlatList
-          data={cars}
-          keyExtractor={(i) => i.id?.toString()}   // id is integer in DB
-          contentContainerStyle={{ paddingBottom: 28 }}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              {/* If you don't store images in DB, use placeholder */}
-              <Image
-                source={require("../assets/placeholderimage.png")} 
-                style={styles.image}
-              />
-
-              <View style={styles.info}>
-                <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
-                  {item.make} {item.model}
-                </Text>
-
-                <View style={styles.specRow}>
-                  <Text style={styles.tag}>{item.year}</Text>
-                  <Text style={styles.dot}>•</Text>
-                  <Text style={styles.tag}>{item.color ?? "N/A"}</Text>
-                </View>
-
-                <Text style={styles.location}>📍 {location ?? "Unknown"}</Text>
-
-                <View style={styles.actionRow}>
-                  <View style={styles.pricePill}>
-                    <Text style={styles.pricePillText}>
-                      DKK {item.pricePerDay} per day
-                    </Text>
-                  </View>
-
-                  <TouchableOpacity
-                    style={styles.selectBtn}
+            style={styles.background}
+            data={cars}
+            contentContainerStyle={{ paddingBottom: 75 }}
+            renderItem={({ item }) => (
+                <TouchableOpacity
+                    style={styles.card}
                     onPress={() =>
-                      navigation.navigate("Confirmation", {
-                        car: item,
-                        location,
-                        pickupDate,
-                        dropoffDate,
-                      })
+                        navigation.navigate("Confirmation", {
+                            car: item,
+                            pickupLocation: item.pickupLocation,
+                            dropoffLocation: item.dropoffLocation,
+                            pickupDate,
+                            dropoffDate,
+                        })
                     }
-                  >
-                    <Text style={styles.selectText}>Select</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          )}
+                >
+                    {/* If you don't store images in DB, use placeholder */}
+                    <Image
+                        source={require("../assets/test.png")}
+                        style={styles.image}
+                    />
+
+                    <View style={styles.info}>
+
+                        <View >
+                            <View>
+                                <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+                                    {item.make} {item.model}
+                                </Text>
+                            </View>
+
+                            <View style={styles.upperInfo}>
+                                <Text style={styles.specialText}>
+                                    {item.year}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.infoIcons}>
+                            <Ionicons name="car-outline" size={23} color="#ffffffff" />
+                            <Text style={styles.normalText}>
+                                {item.carType}
+                            </Text>
+                        </View>
+
+                        <View style={styles.infoIcons}>
+                            <MaterialCommunityIcons name="gas-station-outline" size={23} color="#ffffffff" />
+                            <Text style={styles.normalText}>
+                                {item.fuelType}
+                            </Text>
+                        </View>
+
+                        <View style={styles.infoIcons}>
+                            <Ionicons name="people-outline" size={23} color="#ffffffff" />
+                            <Text style={styles.normalText}>
+                                {item.seats}
+                            </Text>
+                        </View>
+
+                        <View>
+                            <Text style={styles.normalText}>
+                                DKK {item.pricePerDay}/Day
+                            </Text>
+                        </View>
+
+
+
+
+                    </View>
+                </TouchableOpacity>
+            )}
         />
-      </View>
-    </ImageBackground>
-  );
+
+
+    );
 }
 
 
-const SIDE = 16;
+
 
 const styles = StyleSheet.create({
     background: {
-        flex: 1
+        flex: 1,
+        backgroundColor: "#212121ff",
     },
     imageStyle: {
         resizeMode: "cover"
     },
 
-    overlay: {
-        flex: 1,
-        backgroundColor: "rgba(0,0,0,0.7)",
-        paddingHorizontal: SIDE,
-        paddingTop: 10,
-    },
-
-    headerBox: {
-        alignItems: "center",
-        marginBottom: 12,
-    },
     header: {
         fontSize: 26,
         fontWeight: "800",
-        color: "#fff",
+        color: "#ffffffff",
         letterSpacing: 2,
     },
-    metaText: {
-        color: "#d0d0d0",
-        fontSize: 12,
-        marginTop: 4
-    },
+
 
     card: {
         flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "rgba(0,0,0,0.78)",
-        borderRadius: 16,
+        backgroundColor: "#303030ff",
+        borderRadius: 10,
         overflow: "hidden",
+        borderWidth: 0,
+        padding: 16,
         marginVertical: 10,
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.06)",
+        marginHorizontal: 15,
+
+        // iOS shadow
+        shadowColor: "#000000ff",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+
+        // Android shadow
+        elevation: 6,
     },
 
+
+
     image: {
-        width: 132,
-        height: 110
+        width: 160,
+        height: 140,
+
+
+
     },
 
     info: {
         flex: 1,
-        padding: 12,
-        justifyContent: "center"
+        height: 140,
+        marginHorizontal: 15,
+        justifyContent: "space-between",
+    },
+
+    infoIcons: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 3,
+
+    },
+
+
+    upperInfo: {
+        marginVertical: -5,
     },
 
     name: {
-        color: "#fff",
+        color: "#ffffffff",
         fontSize: 18,
-        fontWeight: "800",
-        marginBottom: 6,
+        fontWeight: "700",
+
     },
 
-    specRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        flexWrap: "wrap",
-        marginBottom: 6,
-    },
-    tag: {
-        color: "#c9c9c9",
-        fontSize: 13
-    },
-    dot: {
-        color: "#c9c9c9",
-        marginHorizontal: 6
+    normalText: {
+        marginVertical: -5,
+        color: "#ffffffff",
+        fontSize: 14,
+
     },
 
-    location: {
-        color: "#bdbdbd",
-        fontSize: 12,
-        marginBottom: 10
-    },
+    specialText: {
+        color: "#B0B0B0",
+        fontSize: 14,
+        marginTop: 4
+    }
 
-    actionRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginTop: 4,
-    },
-    pricePill: {
-        backgroundColor: "rgba(0,0,0,0.78)",
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 999,
-    },
-    pricePillText: {
-        color: "#fff",
-        fontWeight: "900",
-        fontSize: 12,
-        letterSpacing: 0.3,
-    },
 
-    selectBtn: {
-        backgroundColor: "#fff",
-        paddingHorizontal: 18,
-        paddingVertical: 10,
-        borderRadius: 10,
-    },
-    selectText: {
-        fontWeight: "900",
-        color: "#111",
-        fontSize: 14
-    },
 });

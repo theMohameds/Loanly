@@ -1,16 +1,43 @@
 import React, { useState } from "react";
-import {View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView } from "react-native";
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+} from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { Appearance } from "react-native";
 
+const colorScheme = Appearance.getColorScheme(); // 'dark' or 'light'
 type Props = { navigation: any };
 
 export default function RentalSearchScreen({ navigation }: Props) {
-    const [pickupDate, setPickupDate] = useState<Date | null>(null);
-    const [dropoffDate, setDropoffDate] = useState<Date | null>(null);
     const [location, setLocation] = useState("");
 
-    const [isPickupVisible, setPickupVisible] = useState(false);
-    const [isDropoffVisible, setDropoffVisible] = useState(false);
+    // Date states
+    const [pickupDate, setPickupDate] = useState<Date | null>(null);
+    const [dropoffDate, setDropoffDate] = useState<Date | null>(null);
+
+    // Time states
+    const [pickupTime, setPickupTime] = useState<Date | null>(null);
+    const [dropoffTime, setDropoffTime] = useState<Date | null>(null);
+
+    // Modal visibility
+    const [isPickupDateVisible, setPickupDateVisible] = useState(false);
+    const [isDropoffDateVisible, setDropoffDateVisible] = useState(false);
+    const [isPickupTimeVisible, setPickupTimeVisible] = useState(false);
+    const [isDropoffTimeVisible, setDropoffTimeVisible] = useState(false);
+
+    // Error states
+    const [errors, setErrors] = useState({
+        location: false,
+        dateBox: false,
+        timeBox: false,
+    });
 
     const roundToInterval = (date: Date, interval = 15) => {
         const d = new Date(date);
@@ -18,229 +45,339 @@ export default function RentalSearchScreen({ navigation }: Props) {
         return new Date(Math.round(d.getTime() / ms) * ms);
     };
 
-    const formatShort = (d: Date | null) =>
-        d
-            ? d.toLocaleString(undefined, {
-                day: "2-digit",
-                month: "short",
-                hour: "2-digit",
-                minute: "2-digit",
-            })
-            : "";
+    const formatDate = (d: Date | null) =>
+        d ? d.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" }) : "";
+
+    const formatTime = (d: Date | null) =>
+        d ? d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : "";
 
     const confirmSelection = () => {
-        if (!pickupDate || !dropoffDate || !location) {
-            alert("Please select pickup, drop-off, and location.");
-            return;
-        }
-        navigation.navigate("AvailableCars", {
-            location,
-            pickupDate: pickupDate.toISOString(),
-            dropoffDate: dropoffDate.toISOString(),
-        });
+    const newErrors = {
+        location: !location,
+        dateBox: !pickupDate || !dropoffDate,
+        timeBox: !pickupTime || !dropoffTime,
     };
+    setErrors(newErrors);
+
+    if (Object.values(newErrors).some(Boolean)) return;
+
+    // Combine date + time
+    const combinedPickup = new Date(
+        pickupDate!.getFullYear(),
+        pickupDate!.getMonth(),
+        pickupDate!.getDate(),
+        pickupTime!.getHours(),
+        pickupTime!.getMinutes()
+    ).toISOString();
+
+    const combinedDropoff = new Date(
+        dropoffDate!.getFullYear(),
+        dropoffDate!.getMonth(),
+        dropoffDate!.getDate(),
+        dropoffTime!.getHours(),
+        dropoffTime!.getMinutes()
+    ).toISOString();
+
+    navigation.navigate("AvailableCars", {
+        location,
+        pickupDate: combinedPickup,
+        dropoffDate: combinedDropoff,
+    });
+};
+
 
     return (
-        <ImageBackground
-            source={require("../assets/background.png")}
-            style={styles.background}
-            imageStyle={styles.imageStyle}
-        >
-            <View style={styles.overlay}>
-                <SafeAreaView style={{ flex: 1 }}>
-                    <KeyboardAvoidingView
-                        behavior={Platform.OS === "ios" ? "padding" : undefined}
-                        style={{ flex: 1 }}
+        <View style={styles.overlay}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                style={{ flex: 1 }}
+            >
+                <ScrollView
+                    contentContainerStyle={styles.content}
+                    bounces={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    {/* Location input field */}
+                    <View style={styles.inputWrapper}>
+                        <Text style={styles.cardLabel}>Pickup Location</Text>
+                        <TextInput
+                            style={[styles.input, errors.location && styles.inputError]}
+                            placeholder="Enter city or postcode"
+                            placeholderTextColor="#9a9a9a"
+                            value={location}
+                            onChangeText={(text) => {
+                                setLocation(text);
+                                if (text) setErrors((prev) => ({ ...prev, location: false }));
+                            }}
+                            returnKeyType="done"
+                        />
+                    </View>
+
+                    {/* Date pickers */}
+                    <View
+                        style={[
+                            styles.boxDate,
+                            errors.dateBox && styles.boxError, // 🔴 full red border if invalid
+                        ]}
                     >
-                        <ScrollView
-                            contentContainerStyle={styles.content}
-                            bounces={false}
-                            keyboardShouldPersistTaps="handled"
+                        <TouchableOpacity
+                            style={styles.card}
+                            onPress={() => setPickupDateVisible(true)}
+                            activeOpacity={0.9}
                         >
-                            <Text style={styles.header}>SELECT INFO</Text>
+                            <Text style={styles.cardLabel}>PICKUP DATE</Text>
+                            <Text style={styles.cardValue}>
+                                {pickupDate ? formatDate(pickupDate) : "Choose date"}
+                            </Text>
+                        </TouchableOpacity>
 
-                            {/* Date pickers stacked */}
-                            <View style={styles.dateWrapper}>
-                                <TouchableOpacity
-                                    style={styles.card}
-                                    onPress={() => setPickupVisible(true)}
-                                    activeOpacity={0.9}
-                                >
-                                    <Text style={styles.cardLabel}>PICKUP</Text>
-                                    <Text style={styles.cardValue}>
-                                        {pickupDate ? formatShort(pickupDate) : "Choose date & time"}
-                                    </Text>
-                                </TouchableOpacity>
+                        <View style={styles.separator} />
 
-                                <TouchableOpacity
-                                    style={styles.card}
-                                    onPress={() => setDropoffVisible(true)}
-                                    activeOpacity={0.9}
-                                >
-                                    <Text style={styles.cardLabel}>DROPOFF</Text>
-                                    <Text style={styles.cardValue}>
-                                        {dropoffDate ? formatShort(dropoffDate) : "Choose date & time"}
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
+                        <TouchableOpacity
+                            style={styles.card}
+                            onPress={() => setDropoffDateVisible(true)}
+                            activeOpacity={0.9}
+                        >
+                            <Text style={styles.cardLabel}>DROPOFF DATE</Text>
+                            <Text style={styles.cardValue}>
+                                {dropoffDate ? formatDate(dropoffDate) : "Choose date"}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
 
-                            {/* PICKUP picker - Dark Mode  - 15 min intervals */}
-                            <DateTimePickerModal
-                                isVisible={isPickupVisible}
-                                mode="datetime"
-                                minuteInterval={15}
-                                themeVariant="dark"
-                                textColor="#fff"
-                                isDarkModeEnabled
-                                pickerContainerStyleIOS={{ backgroundColor: "#1c1c1e" }}
-                                buttonTextColorIOS="#fff"
-                                accentColor="#FFD400"
-                                onConfirm={(date) => {
-                                    const rounded = roundToInterval(date, 15);
-                                    setPickupDate(rounded);
-                                    setPickupVisible(false);
-                                    if (dropoffDate && rounded >= dropoffDate) setDropoffDate(null);
-                                }}
-                                onCancel={() => setPickupVisible(false)}
-                            />
 
-                            {/* DROP OFF picker - Dark Mode  - 15 min intervals */}
-                            <DateTimePickerModal
-                                isVisible={isDropoffVisible}
-                                mode="datetime"
-                                minuteInterval={15}
-                                minimumDate={pickupDate ?? undefined}
-                                themeVariant="dark"
-                                textColor="#fff"
-                                isDarkModeEnabled
-                                pickerContainerStyleIOS={{ backgroundColor: "#1c1c1e" }}
-                                buttonTextColorIOS="#fff"
-                                accentColor="#FFD400"
-                                onConfirm={(date) => {
-                                    const rounded = roundToInterval(date, 15);
-                                    setDropoffDate(rounded);
-                                    setDropoffVisible(false);
-                                }}
-                                onCancel={() => setDropoffVisible(false)}
-                            />
 
-                            {/* Location input field */}
-                            <View style={styles.inputWrapper}>
-                                <Text style={styles.cardLabel}>PICKUP LOCATION</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Enter city or postcode"
-                                    placeholderTextColor="#9a9a9a"
-                                    value={location}
-                                    onChangeText={setLocation}
-                                    returnKeyType="done"
-                                />
-                            </View>
 
-                            {/* Confirm dates and location button */}
-                            <View style={styles.confirmWrap}>
-                                <TouchableOpacity
-                                    style={styles.confirmButton}
-                                    onPress={confirmSelection}
-                                    activeOpacity={0.9}
-                                >
-                                    <Text style={styles.confirmText}>CONFIRM DATES & LOCATION</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </ScrollView>
-                    </KeyboardAvoidingView>
-                </SafeAreaView>
-            </View>
-        </ImageBackground>
+
+
+
+
+
+
+                    {/* Time pickers */}
+                    <View
+                        style={[
+                            styles.boxTime,
+                            errors.timeBox && styles.boxError, // 🔴 full red border if invalid
+                        ]}
+                    >
+                        <TouchableOpacity
+                            style={styles.card}
+                            onPress={() => setPickupTimeVisible(true)}
+                            activeOpacity={0.9}
+                        >
+                            <Text style={styles.cardLabel}>PICKUP TIME</Text>
+                            <Text style={styles.cardValue}>
+                                {pickupTime ? formatTime(pickupTime) : "Choose time"}
+                            </Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.separator} />
+
+                        <TouchableOpacity
+                            style={styles.card}
+                            onPress={() => setDropoffTimeVisible(true)}
+                            activeOpacity={0.9}
+                        >
+                            <Text style={styles.cardLabel}>DROPOFF TIME</Text>
+                            <Text style={styles.cardValue}>
+                                {dropoffTime ? formatTime(dropoffTime) : "Choose time"}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+
+
+
+
+
+
+
+
+                    {/* === DATE PICKERS === */}
+                    <DateTimePickerModal
+                        isVisible={isPickupDateVisible}
+                        mode="date"
+                        themeVariant={colorScheme === "dark" ? "dark" : "light"}
+                        isDarkModeEnabled={colorScheme === "dark"}
+                        textColor="#fff"
+                        accentColor="#FFD400"
+                        buttonTextColorIOS="#ffffffff"
+                        pickerContainerStyleIOS={{ backgroundColor: "#1c1c1e" }}
+                        onConfirm={(date) => {
+                            setPickupDate(date);
+                            setPickupDateVisible(false);
+                        }}
+                        onCancel={() => setPickupDateVisible(false)}
+                    />
+
+                    <DateTimePickerModal
+                        isVisible={isDropoffDateVisible}
+                        mode="date"
+                        minimumDate={pickupDate ?? undefined}
+                        themeVariant={colorScheme === "dark" ? "dark" : "light"}
+                        isDarkModeEnabled={colorScheme === "dark"}
+                        textColor="#fff"
+                        accentColor="#FFD400"
+                        buttonTextColorIOS="#ffffffff"
+                        pickerContainerStyleIOS={{ backgroundColor: "#1c1c1e" }}
+                        // Dropoff date
+                        onConfirm={(date) => {
+                            setDropoffDate(date);
+                            setDropoffDateVisible(false);
+                        }}
+                        onCancel={() => setDropoffDateVisible(false)}
+                    />
+
+
+
+
+
+
+
+                    {/* === TIME PICKERS === */}
+                    <DateTimePickerModal
+                        isVisible={isPickupTimeVisible}
+                        mode="time"
+                        minuteInterval={15}
+                        themeVariant={colorScheme === "dark" ? "dark" : "light"}
+                        isDarkModeEnabled={colorScheme === "dark"}
+                        textColor="#fff"
+                        accentColor="#FFD400"
+                        buttonTextColorIOS="#ffffffff"
+                        pickerContainerStyleIOS={{ backgroundColor: "#1c1c1e" }}
+                        onConfirm={(time) => {
+                            const rounded = roundToInterval(time, 15);
+                            setPickupTime(rounded);
+                            setPickupTimeVisible(false);
+                        }}
+                        onCancel={() => setPickupTimeVisible(false)}
+                    />
+
+                    <DateTimePickerModal
+                        isVisible={isDropoffTimeVisible}
+                        mode="time"
+                        minuteInterval={15}
+                        minimumDate={pickupDate ?? undefined}
+                        themeVariant={colorScheme === "dark" ? "dark" : "light"}
+                        isDarkModeEnabled={colorScheme === "dark"}
+                        textColor="#fff"
+                        accentColor="#f5f5f5ff"
+                        buttonTextColorIOS="#ffffffff"
+                        pickerContainerStyleIOS={{ backgroundColor: "#1c1c1e" }}
+                        onConfirm={(time) => {
+                            const rounded = roundToInterval(time, 15);
+                            setDropoffTime(rounded);
+                            setDropoffTimeVisible(false);
+                        }}
+                        onCancel={() => setDropoffTimeVisible(false)}
+                    />
+
+
+
+
+                    {/* Confirm Button */}
+                    <View style={styles.confirmWrap}>
+                        <TouchableOpacity
+                            style={styles.confirmButton}
+                            onPress={confirmSelection}
+                            activeOpacity={0.9}
+                        >
+                            <Text style={styles.confirmText}>CONFIRM DATES & TIMES</Text>
+                        </TouchableOpacity>
+                    </View>
+
+
+
+
+
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </View>
     );
 }
 
 const SIDE = 24;
 
 const styles = StyleSheet.create({
-    background: {
-        flex: 1
-    },
-
-    imageStyle: {
-        resizeMode: "cover"
-    },
-
     overlay: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.7)",
+        backgroundColor: "#212121ff",
     },
-
     content: {
         paddingHorizontal: SIDE,
         paddingTop: 24,
         paddingBottom: 36,
     },
-
-    header: {
-        fontSize: 28,
-        fontWeight: "800",
-        color: "#fff",
-        textAlign: "center",
-        letterSpacing: 2,
-        marginBottom: 28,
+    boxDate: {
+        backgroundColor: "#303030ff",
+        borderRadius: 16,
+        marginBottom: 20,
+        borderWidth: 2,
+        borderColor: "#303030ff"
     },
-
-    dateWrapper: {
-        width: "100%",
-        marginBottom: 22,
+    boxTime: {
+        backgroundColor: "#303030ff",
+        borderRadius: 16,
+        marginBottom: 20,
+        borderWidth: 2,
+        borderColor: "#303030ff"
     },
-
+    boxError: {
+        borderWidth: 2,
+        borderColor: "#FF5A5F",
+    },
+    separator: {
+        height: 2,
+        backgroundColor: "#858585ff",
+        width: "92%",
+        alignSelf: "center",
+        borderRadius: 50,
+    },
     card: {
         width: "100%",
-        backgroundColor: "rgba(0,0,0,0.82)",
         paddingVertical: 18,
         paddingHorizontal: 16,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.06)",
-        minHeight: 92,
+        minHeight: 75,
         justifyContent: "center",
-        marginBottom: 14
     },
-
     cardLabel: {
         color: "#fff",
-        fontSize: 13,
+        fontSize: 14,
         marginBottom: 6,
         fontWeight: "700",
         letterSpacing: 0.5,
     },
-
     cardValue: {
         color: "#fff",
         fontSize: 18,
         fontWeight: "700",
     },
-
     inputWrapper: {
         marginTop: 6,
-        marginBottom: 18
+        marginBottom: 20,
     },
-
     input: {
-        backgroundColor: "#fff",
+        backgroundColor: "#303030ff",
         height: 56,
         paddingHorizontal: 16,
         borderRadius: 14,
         fontSize: 16,
-        color: "#000",
+        color: "#ffffffff",
         marginTop: 10,
+        borderWidth: 2,
+        borderColor: "#303030ff"
     },
-
+    inputError: {
+        borderWidth: 2,
+        borderColor: "#FF5A5F",
+    },
     confirmWrap: {
         marginTop: 8,
         paddingBottom: 16,
     },
-
     confirmButton: {
-        backgroundColor: "#fff",
-        height: 58,
+        backgroundColor: "#0088FF",
+        height: 54,
         borderRadius: 18,
         alignItems: "center",
         justifyContent: "center",
@@ -250,12 +387,10 @@ const styles = StyleSheet.create({
         shadowRadius: 12,
         elevation: 6,
     },
-
     confirmText: {
-        color: "#151515",
-        fontSize: 18,
+        color: "#ffffffff",
+        fontSize: 16,
         fontWeight: "900",
-        letterSpacing: 1
+        letterSpacing: 1,
     },
 });
-
