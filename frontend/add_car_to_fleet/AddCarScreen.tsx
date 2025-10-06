@@ -79,7 +79,6 @@ export default function AddCarScreen({ navigation }: Props) {
         setErrors(newErrors);
 
         if (Object.values(newErrors).some(Boolean)) {
-            alert("Please fill in all required fields.");
             return;
         }
 
@@ -106,18 +105,20 @@ export default function AddCarScreen({ navigation }: Props) {
         }
     };
 
-    const fields = [
-        { label: "MAKE", value: make, setter: setMake, numeric: false },
-        { label: "MODEL", value: model, setter: setModel, numeric: false },
-        { label: "TRIM", value: trim, setter: setTrim, numeric: false },
-        { label: "CAR TYPE", value: carType, setter: setCarType, numeric: false },
-        { label: "FUEL TYPE", value: fuelType, setter: setFuelType, numeric: false },
-        { label: "YEAR", value: year, setter: setYear, numeric: true },
-        { label: "SEATS", value: seats, setter: setSeats, numeric: true },
-        { label: "PRICE PER DAY", value: pricePerDay, setter: setPricePerDay, numeric: true },
-        { label: "PICKUP LOCATION", value: pickupLocation, setter: setPickupLocation, numeric: false },
-        { label: "DROPOFF LOCATION", value: dropoffLocation, setter: setDropoffLocation, numeric: false },
+    const fields: { key: keyof typeof errors; label: string; value: string; setter: (val: string) => void; numeric: boolean }[] = [
+        { key: "make", label: "MAKE", value: make, setter: setMake, numeric: false },
+        { key: "model", label: "MODEL", value: model, setter: setModel, numeric: false },
+        { key: "trim", label: "TRIM", value: trim, setter: setTrim, numeric: false },
+        { key: "carType", label: "CAR TYPE", value: carType, setter: setCarType, numeric: false },
+        { key: "fuelType", label: "FUEL TYPE", value: fuelType, setter: setFuelType, numeric: false },
+        { key: "year", label: "YEAR", value: year, setter: setYear, numeric: true },
+        { key: "seats", label: "SEATS", value: seats, setter: setSeats, numeric: true },
+        { key: "pricePerDay", label: "PRICE PER DAY", value: pricePerDay, setter: setPricePerDay, numeric: true },
+        { key: "pickupLocation", label: "PICKUP LOCATION", value: pickupLocation, setter: setPickupLocation, numeric: false },
+        { key: "dropoffLocation", label: "DROPOFF LOCATION", value: dropoffLocation, setter: setDropoffLocation, numeric: false },
     ];
+
+
 
     return (
         <ImageBackground
@@ -132,31 +133,27 @@ export default function AddCarScreen({ navigation }: Props) {
                         style={{ flex: 1 }}
                     >
                         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-                            <Text style={styles.header}>ADD CAR</Text>
 
-                            {/* Upload Image */}
                             <View style={styles.imageSection}>
                                 <Text style={styles.cardLabel}>CAR IMAGE</Text>
-                                {image ? (
-                                    <Image source={{ uri: image }} style={styles.carImage} />
-                                ) : (
-                                    <View style={styles.imagePlaceholder}>
-                                        <Text style={styles.imagePlaceholderText}>No image selected</Text>
-                                    </View>
-                                )}
-                                <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-                                    <Text style={styles.uploadText}>{image ? "Change Image" : "Upload Image"}</Text>
+                                <TouchableOpacity style={styles.carImage} onPress={pickImage}>
+                                    {image ? (
+                                        <Image source={{ uri: image }} />
+                                    ) : (
+                                        <View style={styles.imagePlaceholder}>
+                                            <Text style={styles.imagePlaceholderText}>No image selected</Text>
+                                        </View>
+                                    )}
                                 </TouchableOpacity>
                             </View>
 
-                            {/* Inputs */}
                             {fields.map((field) => (
                                 <View key={field.label} style={styles.inputWrapper}>
                                     <Text style={styles.cardLabel}>{field.label}</Text>
                                     <TextInput
                                         style={[
                                             styles.input,
-                                            errors[field.label.replace(" ", "").toLowerCase() as keyof typeof errors] && styles.inputError,
+                                            errors[field.key] && styles.inputError, // uses exact key
                                         ]}
                                         placeholder={`Enter ${field.label.toLowerCase()}`}
                                         placeholderTextColor="#9a9a9a"
@@ -165,11 +162,12 @@ export default function AddCarScreen({ navigation }: Props) {
                                             field.setter(text);
                                             setErrors((prev) => ({
                                                 ...prev,
-                                                [field.label.replace(" ", "").toLowerCase()]: false,
+                                                [field.key]: false, // update error for the correct field
                                             }));
                                         }}
                                         keyboardType={field.numeric ? "numeric" : "default"}
                                     />
+
                                 </View>
                             ))}
 
@@ -190,22 +188,109 @@ export default function AddCarScreen({ navigation }: Props) {
 const SIDE = 24;
 
 const styles = StyleSheet.create({
-    background: { flex: 1 },
-    imageStyle: { resizeMode: "cover" },
-    overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)" },
-    content: { paddingHorizontal: SIDE, paddingTop: 24, paddingBottom: 36 },
-    header: { fontSize: 28, fontWeight: "800", color: "#fff", textAlign: "center", letterSpacing: 2, marginBottom: 28 },
-    imageSection: { marginBottom: 24, alignItems: "center" },
-    imagePlaceholder: { width: "100%", height: 180, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.1)", alignItems: "center", justifyContent: "center", marginBottom: 10, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
-    imagePlaceholderText: { color: "#ccc", fontSize: 14 },
-    carImage: { width: "100%", height: 180, borderRadius: 16, marginBottom: 10 },
-    uploadButton: { backgroundColor: "#fff", borderRadius: 12, paddingVertical: 12, paddingHorizontal: 24 },
-    uploadText: { color: "#000", fontSize: 16, fontWeight: "700" },
-    cardLabel: { color: "#fff", fontSize: 13, marginBottom: 6, fontWeight: "700", letterSpacing: 0.5, alignSelf: "flex-start" },
-    inputWrapper: { marginTop: 6, marginBottom: 18 },
-    input: { backgroundColor: "#303030ff", height: 56, paddingHorizontal: 16, borderRadius: 14, fontSize: 16, color: "#fff", marginTop: 10, borderWidth: 2, borderColor: "#303030ff" },
-    inputError: { borderColor: "#FF5A5F" },
-    confirmWrap: { marginTop: 8, paddingBottom: 16 },
-    confirmButton: { backgroundColor: "#0088FF", height: 58, borderRadius: 18, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.18, shadowRadius: 12, elevation: 6 },
-    confirmText: { color: "#fff", fontSize: 18, fontWeight: "900", letterSpacing: 1 },
+    background: {
+        flex: 1
+    },
+    imageStyle: {
+        resizeMode: "cover"
+    },
+    overlay: {
+        flex: 1,
+        backgroundColor: "#212121ff"
+    },
+    content: {
+        paddingHorizontal: SIDE,
+        paddingTop: 24,
+        paddingBottom: 36
+    },
+    header: {
+        fontSize: 28,
+        fontWeight: "800",
+        color: "#fff",
+        textAlign: "center",
+        letterSpacing: 2,
+        marginBottom: 28
+    },
+    imageSection: {
+        marginBottom: 24,
+        alignItems: "center"
+    },
+    imagePlaceholder: {
+        width: "100%",
+        height: 180,
+        borderRadius: 16,
+        backgroundColor: "rgba(255,255,255,0.1)",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.1)"
+    },
+    imagePlaceholderText: {
+        color: "#ccc",
+        fontSize: 14
+    },
+    carImage: {
+        width: "100%",
+        height: 180,
+        borderRadius: 16,
+        marginBottom: 10
+    },
+    uploadButton: {
+        backgroundColor: "#fff",
+        borderRadius: 12,
+        paddingVertical: 12,
+        paddingHorizontal: 24
+    },
+    uploadText: {
+        color: "#000",
+        fontSize: 16,
+        fontWeight: "700"
+    },
+    cardLabel: {
+        color: "#fff",
+        fontSize: 13,
+        marginBottom: 6,
+        fontWeight: "700",
+        letterSpacing: 0.5,
+        alignSelf: "flex-start"
+    },
+    inputWrapper: {
+        marginTop: 6,
+        marginBottom: 18
+    },
+    input: {
+        backgroundColor: "#303030ff",
+        height: 56,
+        paddingHorizontal: 16,
+        borderRadius: 14,
+        fontSize: 16,
+        color: "#fff",
+        marginTop: 10,
+        borderWidth: 2,
+        borderColor: "#303030ff"
+    },
+    inputError: {
+        borderColor: "#FF5A5F"
+    },
+    confirmWrap: {
+        marginTop: 8,
+        paddingBottom: 16
+    },
+    confirmButton: {
+        backgroundColor: "#0088FF",
+        height: 58, borderRadius: 18,
+        alignItems: "center",
+        justifyContent: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.18,
+        shadowRadius: 12, elevation: 6
+    },
+    confirmText: {
+        color: "#ffffffff",
+        fontSize: 16,
+        fontWeight: "900",
+        letterSpacing: 1,
+    },
 });

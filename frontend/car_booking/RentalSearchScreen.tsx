@@ -52,38 +52,57 @@ export default function RentalSearchScreen({ navigation }: Props) {
         d ? d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : "";
 
     const confirmSelection = () => {
-    const newErrors = {
-        location: !location,
-        dateBox: !pickupDate || !dropoffDate,
-        timeBox: !pickupTime || !dropoffTime,
+        const newErrors = {
+            location: !location,
+            dateBox: !pickupDate || !dropoffDate,
+            timeBox: !pickupTime || !dropoffTime,
+        };
+        setErrors(newErrors);
+
+        if (Object.values(newErrors).some(Boolean)) return;
+
+        const combinedPickup = new Date(
+            pickupDate!.getFullYear(),
+            pickupDate!.getMonth(),
+            pickupDate!.getDate(),
+            pickupTime!.getHours(),
+            pickupTime!.getMinutes()
+        );
+
+        const combinedDropoff = new Date(
+            dropoffDate!.getFullYear(),
+            dropoffDate!.getMonth(),
+            dropoffDate!.getDate(),
+            dropoffTime!.getHours(),
+            dropoffTime!.getMinutes()
+        );
+
+        const diffMs = combinedDropoff.getTime() - combinedPickup.getTime();
+        const diffHours = diffMs / (1000 * 60 * 60);
+
+        if (combinedPickup.getTime() === combinedDropoff.getTime()) {
+            alert("Pickup and dropoff time cannot be the same.");
+            return;
+        }
+        
+        if (diffHours < 0) {
+            alert("Dropoff time must be after pickup time.");
+            return;
+        }
+
+        if (diffHours < 1) {
+            alert("Booking duration must be at least 1 hour.");
+            return;
+        }
+
+
+        navigation.navigate("AvailableCars", {
+            location,
+            pickupDate: combinedPickup.toISOString(),
+            dropoffDate: combinedDropoff.toISOString(),
+        });
     };
-    setErrors(newErrors);
 
-    if (Object.values(newErrors).some(Boolean)) return;
-
-    // Combine date + time
-    const combinedPickup = new Date(
-        pickupDate!.getFullYear(),
-        pickupDate!.getMonth(),
-        pickupDate!.getDate(),
-        pickupTime!.getHours(),
-        pickupTime!.getMinutes()
-    ).toISOString();
-
-    const combinedDropoff = new Date(
-        dropoffDate!.getFullYear(),
-        dropoffDate!.getMonth(),
-        dropoffDate!.getDate(),
-        dropoffTime!.getHours(),
-        dropoffTime!.getMinutes()
-    ).toISOString();
-
-    navigation.navigate("AvailableCars", {
-        location,
-        pickupDate: combinedPickup,
-        dropoffDate: combinedDropoff,
-    });
-};
 
 
     return (
@@ -97,7 +116,6 @@ export default function RentalSearchScreen({ navigation }: Props) {
                     bounces={false}
                     keyboardShouldPersistTaps="handled"
                 >
-                    {/* Location input field */}
                     <View style={styles.inputWrapper}>
                         <Text style={styles.cardLabel}>Pickup Location</Text>
                         <TextInput
@@ -113,11 +131,10 @@ export default function RentalSearchScreen({ navigation }: Props) {
                         />
                     </View>
 
-                    {/* Date pickers */}
                     <View
                         style={[
                             styles.boxDate,
-                            errors.dateBox && styles.boxError, // 🔴 full red border if invalid
+                            errors.dateBox && styles.boxError,
                         ]}
                     >
                         <TouchableOpacity
@@ -145,20 +162,10 @@ export default function RentalSearchScreen({ navigation }: Props) {
                         </TouchableOpacity>
                     </View>
 
-
-
-
-
-
-
-
-
-
-                    {/* Time pickers */}
                     <View
                         style={[
                             styles.boxTime,
-                            errors.timeBox && styles.boxError, // 🔴 full red border if invalid
+                            errors.timeBox && styles.boxError,
                         ]}
                     >
                         <TouchableOpacity
@@ -186,19 +193,11 @@ export default function RentalSearchScreen({ navigation }: Props) {
                         </TouchableOpacity>
                     </View>
 
-
-
-
-
-
-
-
-                    {/* === DATE PICKERS === */}
                     <DateTimePickerModal
                         isVisible={isPickupDateVisible}
                         mode="date"
                         themeVariant={colorScheme === "dark" ? "dark" : "light"}
-                        isDarkModeEnabled={colorScheme === "dark"}
+                        isDarkModeEnabled={colorScheme === "light"}
                         textColor="#fff"
                         accentColor="#FFD400"
                         buttonTextColorIOS="#ffffffff"
@@ -215,7 +214,7 @@ export default function RentalSearchScreen({ navigation }: Props) {
                         mode="date"
                         minimumDate={pickupDate ?? undefined}
                         themeVariant={colorScheme === "dark" ? "dark" : "light"}
-                        isDarkModeEnabled={colorScheme === "dark"}
+                        isDarkModeEnabled={colorScheme === "light"}
                         textColor="#fff"
                         accentColor="#FFD400"
                         buttonTextColorIOS="#ffffffff"
@@ -228,19 +227,12 @@ export default function RentalSearchScreen({ navigation }: Props) {
                         onCancel={() => setDropoffDateVisible(false)}
                     />
 
-
-
-
-
-
-
-                    {/* === TIME PICKERS === */}
                     <DateTimePickerModal
                         isVisible={isPickupTimeVisible}
                         mode="time"
                         minuteInterval={15}
                         themeVariant={colorScheme === "dark" ? "dark" : "light"}
-                        isDarkModeEnabled={colorScheme === "dark"}
+                        isDarkModeEnabled={colorScheme === "light"}
                         textColor="#fff"
                         accentColor="#FFD400"
                         buttonTextColorIOS="#ffffffff"
@@ -259,7 +251,7 @@ export default function RentalSearchScreen({ navigation }: Props) {
                         minuteInterval={15}
                         minimumDate={pickupDate ?? undefined}
                         themeVariant={colorScheme === "dark" ? "dark" : "light"}
-                        isDarkModeEnabled={colorScheme === "dark"}
+                        isDarkModeEnabled={colorScheme === "light"}
                         textColor="#fff"
                         accentColor="#f5f5f5ff"
                         buttonTextColorIOS="#ffffffff"
@@ -272,10 +264,6 @@ export default function RentalSearchScreen({ navigation }: Props) {
                         onCancel={() => setDropoffTimeVisible(false)}
                     />
 
-
-
-
-                    {/* Confirm Button */}
                     <View style={styles.confirmWrap}>
                         <TouchableOpacity
                             style={styles.confirmButton}
@@ -285,16 +273,12 @@ export default function RentalSearchScreen({ navigation }: Props) {
                             <Text style={styles.confirmText}>CONFIRM DATES & TIMES</Text>
                         </TouchableOpacity>
                     </View>
-
-
-
-
-
                 </ScrollView>
             </KeyboardAvoidingView>
         </View>
     );
 }
+
 
 const SIDE = 24;
 

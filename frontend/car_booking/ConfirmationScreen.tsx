@@ -59,19 +59,16 @@ export default function ConfirmationScreen({ route, navigation }: any) {
     return (
         <ImageBackground source={require("../assets/background.png")} style={styles.background} imageStyle={styles.imageStyle}>
             <ScrollView contentContainerStyle={styles.overlay}>
-                <Text style={styles.header}>CONFIRM BOOKING</Text>
 
-                <Image source={require("../assets/placeholderimage.png")} style={styles.carImage} />
+                <Image source={require("../assets/bmw-i4.png")} style={styles.carImage} />
 
                 <View style={styles.infoCard}>
                     <Text style={styles.name}>{car.make} {car.model}</Text>
-                    <Text style={styles.price}>{car.pricePerDay} DKK/day</Text>
                     <Text style={styles.specs}>
-                        ⭐ {car.rating || "-"} ({car.reviews || 0}) • {car.carType || "-"}
+                        ⭐ {car.rating || "-"} ({car.reviews || 0})
                     </Text>
-                    <Text style={styles.location}>📍 {pickupLocation}</Text>
                 </View>
-
+                <Text style={styles.price}>{car.pricePerDay} DKK/day</Text>
                 <View style={styles.detailsBox}>
                     <Text style={styles.label}>Pickup</Text>
                     <Text style={styles.value}>{formatLong(pickupDate)}</Text>
@@ -90,20 +87,99 @@ export default function ConfirmationScreen({ route, navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-    background: { flex: 1 },
-    imageStyle: { resizeMode: "cover" },
-    overlay: { flexGrow: 1, backgroundColor: "rgba(0,0,0,0.7)", padding: 20 },
-    header: { fontSize: 26, fontWeight: "800", color: "#fff", textAlign: "center", marginBottom: 16, letterSpacing: 2 },
-    carImage: { width: "100%", height: 200, borderRadius: 16, marginBottom: 16 },
-    infoCard: { backgroundColor: "rgba(0,0,0,0.8)", borderRadius: 16, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.06)" },
-    name: { color: "#fff", fontSize: 20, fontWeight: "800", marginBottom: 6 },
-    price: { color: "#fff", fontSize: 16, fontWeight: "700", marginBottom: 6 },
-    specs: { color: "#c9c9c9", fontSize: 13, marginBottom: 6 },
-    location: { color: "#bdbdbd", fontSize: 12 },
-    detailsBox: { backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 14, padding: 16, marginBottom: 24 },
-    label: { color: "#bbb", fontSize: 16, marginTop: 6 },
-    value: { color: "#fff", fontSize: 20, fontWeight: "600", marginBottom: 8 },
-    confirmButton: { backgroundColor: "#fff", borderRadius: 16, paddingVertical: 16, alignItems: "center" },
-    confirmText: { fontWeight: "900", fontSize: 16, color: "#111" },
-    centered: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#000" },
+    background: {
+        flex: 1
+    },
+    imageStyle: {
+        resizeMode: "cover"
+    },
+    overlay: {
+        flexGrow: 1,
+        backgroundColor: "rgba(0,0,0,0.7)",
+        padding: 20
+    },
+    header: {
+        fontSize: 26,
+        fontWeight: "800",
+        color: "#fff",
+        textAlign: "center",
+        marginBottom: 16,
+        letterSpacing: 2
+    },
+    carImage: {
+        width: "100%",
+        height: 200,
+        borderRadius: 16,
+        marginBottom: 16
+    },
+    infoCard: {
+        backgroundColor: "rgba(0,0,0,0.8)",
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.06)"
+    },
+    name: {
+        color: "#fff",
+        fontSize: 20,
+        fontWeight: "800",
+        marginBottom: 6
+    },
+    price: {
+        color: "#fff",
+        fontSize: 16,
+        fontWeight: "700",
+        marginBottom: 6
+    },
+    specs: {
+        color: "#c9c9c9",
+        fontSize: 13,
+        marginBottom: 6
+    },
+    location: {
+        color: "#bdbdbd",
+        fontSize: 12
+    },
+    detailsBox: {
+        backgroundColor: "rgba(255,255,255,0.05)",
+        borderRadius: 14,
+        padding: 16,
+        marginBottom: 24
+    },
+    label: {
+        color: "#bbb",
+        fontSize: 16,
+        marginTop: 6
+    },
+    value: {
+        color: "#fff",
+        fontSize: 20,
+        fontWeight: "600",
+        marginBottom: 8
+    },
+    confirmButton: {
+        backgroundColor: "#0088FF",
+        height: 54,
+        borderRadius: 18,
+        alignItems: "center",
+        justifyContent: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.18,
+        shadowRadius: 12,
+        elevation: 6,
+    },
+    confirmText: {
+        color: "#ffffffff",
+        fontSize: 16,
+        fontWeight: "900",
+        letterSpacing: 1,
+    },
+    centered: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#000"
+    },
 });

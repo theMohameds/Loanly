@@ -8,22 +8,20 @@ import { createBookingsTable, dropTableBooking } from "./backend/database/bookin
 
 async function initDatabase() {
   try {
-    // Users
+
     await createUsersTable();
     await createDefaultUser();
 
-    // Bookings
-    await dropTableBooking();       // Drop every time to reset
-    await createBookingsTable();    // Recreate table with pickup/dropoff columns
+    await dropTableBooking();       
+    await createBookingsTable();   
 
-    // Cars
     await dropTableCar();
     await createCarsTable();
     await clearCars();
     const cars = await getCarsFromFiles();
     await saveCars(cars);
 
-    console.log("Database initialized successfully!");
+    //console.log("Database initialized successfully!");
   } catch (err) {
     console.error("Failed to initialize database:", err);
   }
