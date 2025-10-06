@@ -60,7 +60,7 @@ export default function ConfirmationScreen({ route, navigation }: any) {
         <ImageBackground source={require("../assets/background.png")} style={styles.background} imageStyle={styles.imageStyle}>
             <ScrollView contentContainerStyle={styles.overlay}>
 
-                <Image source={require("../assets/bmw-i4.png")} style={styles.carImage} />
+                <Image source={require("../assets/placeholderimage.png")} style={styles.carImage} />
 
                 <View style={styles.infoCard}>
                     <Text style={styles.name}>{car.make} {car.model}</Text>

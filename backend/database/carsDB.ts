@@ -131,3 +131,10 @@ export async function getCarById(id: number): Promise<Car | null> {
 }
 
 
+export async function getCarsCount(): Promise<number> {
+    const db = await database;
+    const result = await db.getAllAsync<{ count: number }>(
+        `SELECT COUNT(*) as count FROM cars`
+    );
+    return result[0]?.count || 0;
+}

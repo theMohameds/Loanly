@@ -2,31 +2,30 @@ import { registerRootComponent } from "expo";
 import App from "./App";
 
 import { getCarsFromFiles } from "./backend/services/api";
-import { createCarsTable, saveCars, clearCars, dropTableCar } from "./backend/database/carsDB";
+import { createCarsTable, saveCars, getCarsCount } from "./backend/database/carsDB";
 import { createUsersTable, createDefaultUser } from "./backend/database/userDB";
-import { createBookingsTable, dropTableBooking } from "./backend/database/bookingsDB";
+import { createBookingsTable } from "./backend/database/bookingsDB";
 
 async function initDatabase() {
   try {
-
     await createUsersTable();
     await createDefaultUser();
-
-    await dropTableBooking();       
-    await createBookingsTable();   
-
-    await dropTableCar();
+    
+    await createBookingsTable();
     await createCarsTable();
-    await clearCars();
-    const cars = await getCarsFromFiles();
-    await saveCars(cars);
 
-    //console.log("Database initialized successfully!");
+    const carsCount = await getCarsCount();
+    if (carsCount === 0) {
+      const cars = await getCarsFromFiles();
+      await saveCars(cars);
+      //console.log("Cars loaded from files into database.");
+    } else {
+      //console.log("Cars already exist in database, skipping API call.");
+    }
   } catch (err) {
     console.error("Failed to initialize database:", err);
   }
 }
 
-// Initialize DB first, then start the app
 initDatabase();
 registerRootComponent(App);
