@@ -35,16 +35,16 @@ const styles = StyleSheet.create({
     bg: { flex: 1, width: '100%', height: '100%' },
     overlay: { flex: 1, padding: 24 },
     header: {
-        marginTop: 40,
+        marginTop: 8,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
     },
     logo: {
-        fontSize: 48,
+        fontSize: 42,
         fontWeight: '800',
         color: 'white',
-        paddingHorizontal: 15,
+        paddingHorizontal: 8,
     },
     center: {
         flex: 1,
@@ -58,12 +58,13 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         paddingVertical: 18,
         alignItems: 'center',
+        borderWidth: 0.5,
         borderColor: 'white',
         marginVertical: 10,
     },
     buttonText: {
         color: 'white',
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: '600',
     },
 });

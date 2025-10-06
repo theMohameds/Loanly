@@ -200,7 +200,8 @@ function RentalStack({ route }: any) {
 }
 
 export default function App() {
-    const isLoggedIn = true;
+    //const isLoggedIn = true;
+    const [isLoggedIn, setIsloggedIn] = React.useState(false);
 
     return (
         <NavigationContainer>
@@ -212,7 +213,16 @@ export default function App() {
                     <Stack.Screen name="AddCarStack" component={AddCarStack} />
                 </Stack.Navigator>
             ) : (
-                <LoginStack />
+                //<LoginStack />
+                <Stack.Navigator screenOptions={{ headerShown: false}} initialRouteName="MainMenu">
+                    <Stack.Screen name="MainMenu" component={MainMenuScreen} />
+                    <Stack.Screen name="LoginOptions">
+                        {props => <LoginOptionsScreen {...props} onSignedIn={() => setIsloggedIn(true)} />}
+                    </Stack.Screen>
+                    <Stack.Screen name="EmailLogin">
+                        {props => <EmailLoginScreen {...props} onSignedIn={() => setIsloggedIn(true)} />}
+                    </Stack.Screen>
+                </Stack.Navigator>
             )}
         </NavigationContainer>
     );
