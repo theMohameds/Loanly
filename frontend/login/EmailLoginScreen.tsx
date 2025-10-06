@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import {Text, TextInput, Pressable, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, Alert
+import {Text, TextInput, Pressable, StyleSheet, ImageBackground, KeyboardAvoidingView, ToastAndroid, Platform, ScrollView, Alert
 } from 'react-native';
 
-export default function EmailLoginScreen({ navigation }: any) {
+export default function EmailLoginScreen({ navigation, onSignedIn }: any) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -27,8 +27,13 @@ export default function EmailLoginScreen({ navigation }: any) {
         }
 
         // if All validations Is == succes then you can navigate to mainTabs
-        Alert.alert('Success', 'Login successful!');
-        navigation.navigate('MainTabs', { screen: 'Home' });
+        if(Platform.OS === 'android')  {
+            ToastAndroid.show('Login successful!', ToastAndroid.SHORT);
+            } else {
+                Alert.alert('Success', 'Login successful!');
+                }
+        //navigation.navigate('MainTabs', { screen: 'Home' });
+        onSignedIn();
     };
 
     return (
