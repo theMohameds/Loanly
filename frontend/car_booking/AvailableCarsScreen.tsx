@@ -50,9 +50,8 @@ export default function AvailableCarsScreen({ route, navigation }: any) {
                         })
                     }
                 >
-                    {/* If you don't store images in DB, use placeholder */}
                     <Image
-                        source={require("../assets/test.png")}
+                        source={require("../assets/placeholderimage.png")}
                         style={styles.image}
                     />
 
@@ -98,16 +97,10 @@ export default function AvailableCarsScreen({ route, navigation }: any) {
                                 DKK {item.pricePerDay}/Day
                             </Text>
                         </View>
-
-
-
-
                     </View>
                 </TouchableOpacity>
             )}
         />
-
-
     );
 }
 
@@ -119,9 +112,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#212121ff",
     },
-    imageStyle: {
-        resizeMode: "cover"
-    },
+
 
     header: {
         fontSize: 26,
@@ -151,20 +142,17 @@ const styles = StyleSheet.create({
         elevation: 6,
     },
 
-
-
     image: {
         width: 160,
         height: 140,
-
-
-
+        resizeMode: "cover"
     },
 
     info: {
         flex: 1,
         height: 140,
         marginHorizontal: 15,
+        marginVertical: -3,
         justifyContent: "space-between",
     },
 
@@ -184,6 +172,7 @@ const styles = StyleSheet.create({
         color: "#ffffffff",
         fontSize: 18,
         fontWeight: "700",
+        
 
     },
 

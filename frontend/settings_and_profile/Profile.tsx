@@ -446,7 +446,7 @@ const ProfileScreen: React.FC = () => {
                     <Text style={styles.menuItemArrow}>›</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={styles.menuItem}
+                    style={styles.lastMenuItem}
                     onPress={() => setShowDocuments(true)}
                 >
                     <Text style={styles.menuItemText}>Documents</Text>
@@ -464,18 +464,23 @@ const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#100f0f',
+        backgroundColor: '#212121ff',
     },
     header: {
-        backgroundColor: '#100f0f',
+        backgroundColor: '#252525ff',
         padding: 20,
-        paddingTop: 50,
+        paddingTop: 45,
         alignItems: 'center',
-        borderBottomWidth: 1,
-        borderBottomColor: '#100f0f',
+        // iOS shadow
+        shadowColor: "#000000ff",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+        // Android shadow
+        elevation: 6,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: 'bold',
         color: '#ffffff',
     },
@@ -509,8 +514,8 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     infoSection: {
-        backgroundColor: '#100f0f',
-        marginHorizontal: 20,
+        backgroundColor: '#303030ff',
+        marginHorizontal: 24,
         borderRadius: 10,
         padding: 20,
         marginBottom: 20,
@@ -541,32 +546,31 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     saveButton: {
-        backgroundColor: '#FFD700',
+        backgroundColor: '#0088FF',
         padding: 15,
         borderRadius: 8,
         alignItems: 'center',
         marginBottom: 10,
     },
     saveButtonText: {
-        color: '#333',
+        color: '#ffffffff',
         fontSize: 16,
         fontWeight: 'bold',
     },
     cancelButton: {
-        backgroundColor: '#fff',
+        backgroundColor: '#303030ff',
         padding: 15,
         borderRadius: 8,
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#ddd',
+        
     },
     cancelButtonText: {
-        color: '#666',
+        color: '#ffffffff',
         fontSize: 16,
     },
     menuSection: {
-        backgroundColor: '#100f0f',
-        marginHorizontal: 20,
+        backgroundColor: '#303030ff',
+        marginHorizontal: 24,
         borderRadius: 10,
         marginBottom: 30,
     },
@@ -576,7 +580,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 20,
         borderBottomWidth: 1,
-        borderBottomColor: '#100f0f',
+        borderBottomColor: '#858585ff',
+    },
+    lastMenuItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 20,
     },
     menuItemText: {
         fontSize: 16,
@@ -586,6 +596,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         color: '#999',
     },
+
     // Modal Styles
     modalContainer: {
         flex: 1,
@@ -595,7 +606,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 20,
+        padding: 24,
         paddingTop: 50,
         borderBottomWidth: 1,
         borderBottomColor: '#333',
@@ -741,14 +752,13 @@ const styles = StyleSheet.create({
     },
     // Document Styles
     documentCard: {
-        backgroundColor: '#1a1a1a',
+        backgroundColor: '#1c1c1e',
         borderRadius: 12,
         padding: 15,
         marginBottom: 12,
         flexDirection: 'row',
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#333',
+        
     },
     documentIcon: {
         width: 50,

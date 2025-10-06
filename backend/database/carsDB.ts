@@ -104,3 +104,30 @@ export async function loadCars(): Promise<Car[]> {
     );
     return result;
 }
+
+
+export async function getCarById(id: number): Promise<Car | null> {
+  const db = await database;
+  const rows = await db.getAllSync<Car>(
+    `SELECT * FROM cars WHERE id = $id`,
+    { $id: id }
+  );
+
+  if (!rows || rows.length === 0) return null;
+
+  const row = rows[0]; 
+  return {
+    make: row.make,
+    model: row.model,
+    trim: row.trim,
+    carType: row.carType,
+    fuelType: row.fuelType,
+    year: row.year,
+    seats: row.seats,
+    pricePerDay: row.pricePerDay,
+    pickupLocation: row.pickupLocation,
+    dropoffLocation: row.dropoffLocation,
+  };
+}
+
+

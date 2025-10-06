@@ -50,10 +50,8 @@ export default function EmailLoginScreen({ navigation, onSignedIn }: any) {
                     contentContainerStyle={styles.scroll}
                     keyboardShouldPersistTaps="handled"
                 >
-                    {/* Logo */}
                     <Text style={styles.logo}>LOANLY</Text>
 
-                    {/* Email input */}
                     <TextInput
                         style={styles.input}
                         placeholder="E-mail"
@@ -62,7 +60,6 @@ export default function EmailLoginScreen({ navigation, onSignedIn }: any) {
                         onChangeText={setEmail}
                     />
 
-                    {/* Password input */}
                     <TextInput
                         style={styles.input}
                         placeholder="Password"
@@ -72,7 +69,6 @@ export default function EmailLoginScreen({ navigation, onSignedIn }: any) {
                         onChangeText={setPassword}
                     />
 
-                    {/* Login button */}
                     <Pressable
                         style={styles.button}
                         onPress={handleLogin}
@@ -86,13 +82,19 @@ export default function EmailLoginScreen({ navigation, onSignedIn }: any) {
 }
 
 const styles = StyleSheet.create({
-    bg: { flex: 1, width: '100%', height: '100%' },
-    scroll: { flexGrow: 1, justifyContent: 'center', padding: 24 },
+    bg: { 
+        flex: 1, 
+        width: '100%', 
+        height: '100%' },
+    scroll: {
+         flexGrow: 1, 
+         justifyContent: 'center', 
+         padding: 24 },
     logo: {
         fontSize: 32,
         fontWeight: '800',
         color: 'white',
-        marginBottom: 60, // pushes logo further to the top
+        marginBottom: 60, 
         marginTop: 60,
         alignSelf: 'center',
     },

@@ -57,3 +57,10 @@ export async function getAllBookings() {
     ORDER BY b.start_datetime ASC
   `);
 }
+
+export async function deleteBooking(bookingId: number) {
+  const db = await database;
+  await db.runAsync("DELETE FROM bookings WHERE id = $id", { $id: bookingId });
+}
+
+

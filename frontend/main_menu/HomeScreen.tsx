@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, ImageBackground } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import {useNavigation} from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 
 export default function HomeScreen() {
     const navigation = useNavigation();
@@ -22,7 +22,7 @@ export default function HomeScreen() {
                     <Pressable style={styles.button} onPress={() => navigation.navigate("Rental")} >
                         <Text style={styles.buttonText}>Rent Car</Text>
                     </Pressable>
-                    <Pressable style={styles.button} onPress={() => navigation.navigate("AddCar")}>
+                    <Pressable style={styles.button} onPress={() => navigation.navigate("AddCarStack")}>
                         <Text style={styles.buttonText}>Rent out your car</Text>
                     </Pressable>
                 </View>
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     },
     button: {
         width: '85%',
-        backgroundColor: 'rgba(0,0,0,0.85)',
+        backgroundColor: 'rgba(33, 33, 33, 0.90)',
         borderRadius: 12,
         paddingVertical: 18,
         alignItems: 'center',

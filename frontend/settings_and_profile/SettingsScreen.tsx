@@ -19,7 +19,7 @@ interface SettingsOption {
 const SettingsScreen: React.FC = () => {
     const [notifications, setNotifications] = useState(true);
     const [emailNotifications, setEmailNotifications] = useState(true);
-    const [darkMode, setDarkMode] = useState(false);
+    const [darkMode, setDarkMode] = useState(true);
     const [autoSave, setAutoSave] = useState(true);
 
     const handleSignOut = () => {
@@ -63,7 +63,7 @@ const SettingsScreen: React.FC = () => {
                     <Switch
                         value={notifications}
                         onValueChange={setNotifications}
-                        trackColor={{ false: '#ddd', true: '#FFD700' }}
+                        trackColor={{ false: '#ddd', true: '#0088FF' }}
                         thumbColor={notifications ? '#fff' : '#f4f3f4'}
                     />
                 </View>
@@ -72,7 +72,7 @@ const SettingsScreen: React.FC = () => {
                     <Switch
                         value={emailNotifications}
                         onValueChange={setEmailNotifications}
-                        trackColor={{ false: '#ddd', true: '#FFD700' }}
+                        trackColor={{ false: '#ddd', true: '#0088FF' }}
                         thumbColor={emailNotifications ? '#fff' : '#f4f3f4'}
                     />
                 </View>
@@ -99,7 +99,7 @@ const SettingsScreen: React.FC = () => {
                     <Switch
                         value={darkMode}
                         onValueChange={setDarkMode}
-                        trackColor={{ false: '#ddd', true: '#FFD700' }}
+                        trackColor={{ false: '#ddd', true: '#0088FF' }}
                         thumbColor={darkMode ? '#fff' : '#f4f3f4'}
                     />
                 </View>
@@ -108,7 +108,7 @@ const SettingsScreen: React.FC = () => {
                     <Switch
                         value={autoSave}
                         onValueChange={setAutoSave}
-                        trackColor={{ false: '#ddd', true: '#FFD700' }}
+                        trackColor={{ false: '#ddd', true: '#0088FF' }}
                         thumbColor={autoSave ? '#fff' : '#f4f3f4'}
                     />
                 </View>
@@ -138,7 +138,7 @@ const SettingsScreen: React.FC = () => {
                 <Text style={[styles.sectionTitle, darkMode && styles.sectionTitleDark]}>About</Text>
                 <TouchableOpacity style={[styles.settingItem, darkMode && styles.settingItemDark]}>
                     <Text style={[styles.settingText, darkMode && styles.settingTextDark]}>Version</Text>
-                    <Text style={[styles.settingValueText, darkMode && styles.settingValueTextDark]}>1.0.0</Text>
+                    <Text style={[styles.settingValueText, darkMode && styles.settingValueTextDark]}>0.1.0</Text>
                 </TouchableOpacity>
             </View>
 
@@ -160,27 +160,48 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
     },
     containerDark: {
-        backgroundColor: '#000000',
+        backgroundColor: '#212121ff',
     },
     header: {
         backgroundColor: '#fff',
         padding: 20,
-        paddingTop: 50,
+        paddingTop: 45,
         alignItems: 'center',
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
+       
+        // iOS shadow
+        shadowColor: "#000000ff",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+
+        // Android shadow
+        elevation: 6,
     },
     headerDark: {
-        backgroundColor: '#1c1c1e',
-        borderBottomColor: '#38383a',
+        backgroundColor: '#252525ff',
+        padding: 20,
+        paddingTop: 45,
+        alignItems: 'center',
+       
+        // iOS shadow
+        shadowColor: "#000000ff",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+
+        // Android shadow
+        elevation: 6,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: 'bold',
         color: '#333',
     },
     headerTitleDark: {
+        fontSize: 22,
+        fontWeight: 'bold',
         color: '#ffffff',
+        
     },
     section: {
         backgroundColor: '#fff',
@@ -190,7 +211,7 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
     },
     sectionDark: {
-        backgroundColor: '#1c1c1e',
+        backgroundColor: '#303030ff',
     },
     sectionTitle: {
         fontSize: 14,
@@ -247,22 +268,24 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
     },
     signOutButton: {
-        backgroundColor: '#333',
+        backgroundColor: '#ffffffff',
         padding: 15,
         borderRadius: 8,
         alignItems: 'center',
         marginBottom: 15,
     },
     signOutButtonDark: {
-        backgroundColor: '#ffffff',
+        backgroundColor: '#303030ff',
     },
     signOutText: {
-        color: '#fff',
+        color: '#000000ff',
         fontSize: 16,
         fontWeight: '600',
     },
     signOutTextDark: {
-        color: '#000000',
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#ffffffff',
     },
     deleteButton: {
         backgroundColor: '#fff',

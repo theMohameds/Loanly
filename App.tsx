@@ -50,20 +50,26 @@ function AddCarStack() {
     return (
         <Stack.Navigator
             screenOptions={{
-                headerStyle: { backgroundColor: "#000" },
+                headerStyle: { backgroundColor: "#252525ff" },
                 headerTintColor: "#fff",
             }}
         >
-            <Stack.Screen name="AddCar" component={AddCarScreen} options={({ navigation }) => ({
-                title: "",
-                headerLeft: () => (
-                    <TouchableOpacity onPress={() => navigation.navigate("MainMenu")} style={{ flexDirection: "row", alignItems: "center", }}
-                    >
-                        <Ionicons name="chevron-back" size={24} color="#fff" />
-                        <Text style={{ color: "#fff", fontSize: 17, marginLeft: 0 }}>Back</Text>
-                    </TouchableOpacity>
-                ),
-            })} />
+            <Stack.Screen
+                name="AddCar"
+                component={AddCarScreen}
+                options={({ navigation }) => ({
+                    title: "Add Car",
+                    headerTitleAlign: "center",
+                    headerLeft: () => (
+                        <TouchableOpacity
+                            onPress={() => navigation.goBack()}
+                            style={{ flexDirection: "row", alignItems: "center" }}
+                        >
+                            <Ionicons name="chevron-back" size={24} color="#fff" />
+                        </TouchableOpacity>
+                    ),
+                })}
+            />
         </Stack.Navigator>
     );
 }
@@ -99,26 +105,28 @@ function BookingsStack() {
     return (
         <Stack.Navigator
             screenOptions={{
-                headerStyle: { backgroundColor: "#000" },
+                headerStyle: { backgroundColor: "#252525ff" },
                 headerTintColor: "#fff",
             }}
         >
-            <Stack.Screen name="BookingsList" component={BookingsScreen}
-                options={({ navigation }) => ({
-                    title: "",
-                    headerLeft: () => (
-                        <TouchableOpacity onPress={() => navigation.navigate("MainMenu")} style={{ flexDirection: "row", alignItems: "center", }}
-                        >
-                            <Ionicons name="chevron-back" size={24} color="#fff" />
-                            <Text style={{ color: "#fff", fontSize: 17, marginLeft: 0 }}>Back</Text>
-                        </TouchableOpacity>
-                    ),
-                })}
+            <Stack.Screen
+                name="BookingsList"
+                component={BookingsScreen}
+                options={{ headerShown: false }}
             />
             <Stack.Screen
                 name="BookingDetails"
                 component={BookingDetailsScreen}
-                options={{ title: "" }}
+                options={{
+                    title: "Booking",
+                    headerTitleAlign: "center",
+                    headerTitleStyle: {
+                        fontSize: 22,
+                        fontWeight: 'bold',
+                        color: "#ffffff",
+
+                    },
+                }}
             />
         </Stack.Navigator>
     );
@@ -126,7 +134,6 @@ function BookingsStack() {
 
 
 function RentalStack({ route }: any) {
-    const { location, pickupDate, dropoffDate } = route.params ?? {};
     return (
         <Stack.Navigator
             screenOptions={{
@@ -140,6 +147,11 @@ function RentalStack({ route }: any) {
                 options={({ navigation }) => ({
                     title: "Search",
                     headerTitleAlign: "center",
+                    headerTitleStyle: {
+                        fontSize: 22,
+                        fontWeight: "bold",
+                        color: "#ffffff",
+                    },
                     headerLeft: () => (
                         <TouchableOpacity
                             onPress={() => navigation.navigate("MainTabs")}
@@ -157,6 +169,11 @@ function RentalStack({ route }: any) {
                 options={({ navigation }) => ({
                     title: "Available Cars",
                     headerTitleAlign: "center",
+                    headerTitleStyle: {
+                        fontSize: 22,
+                        fontWeight: "bold",
+                        color: "#ffffff",
+                    },
                     headerLeft: () => (
                         <TouchableOpacity
                             onPress={() => navigation.navigate("MainTabs")}
@@ -168,7 +185,16 @@ function RentalStack({ route }: any) {
                     ),
                 })}
             />
-            <Stack.Screen name="Confirmation" component={ConfirmationScreen} options={{ title: "" }} />
+            <Stack.Screen name="Confirmation" component={ConfirmationScreen}
+                options={{
+                    title: "Confirm Booking",
+                    headerTitleAlign: "center",
+                    headerTitleStyle: {
+                        fontSize: 22,
+                        fontWeight: "bold",
+                        color: "#ffffff",
+                    },
+                }} />
         </Stack.Navigator>
     );
 }
@@ -184,7 +210,7 @@ export default function App() {
                 <Stack.Navigator screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="MainTabs" component={MainTabs} />
                     <Stack.Screen name="Rental" component={RentalStack} />
-                    <Stack.Screen name="AddCar" component={AddCarScreen} />
+                    <Stack.Screen name="AddCarStack" component={AddCarStack} />
                 </Stack.Navigator>
             ) : (
                 //<LoginStack />
