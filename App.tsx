@@ -67,15 +67,24 @@ function AddCarStack() {
     );
 }
 
-function LoginStack() {
+//  Rettet: LoginStack
+function LoginStack({ setIsLoggedIn }: any) {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="StartScreen" component={MainMenuScreen} />
             <Stack.Screen name="LoginOptions" component={LoginOptionsScreen} />
-            <Stack.Screen name="EmailLogin" component={EmailLoginScreen} />
+            <Stack.Screen name="EmailLogin">
+                {(props) => (
+                    <EmailLoginScreen
+                        {...props}
+                        setIsLoggedIn={setIsLoggedIn}
+                    />
+                )}
+            </Stack.Screen>
         </Stack.Navigator>
     );
 }
+
 
 function ProfileStack() {
     return (
@@ -151,7 +160,7 @@ function RentalStack() {
 }
 
 export default function App() {
-    const isLoggedIn = true;
+    const [isLoggedIn, setIsLoggedIn] = React.useState(true);
 
     return (
         <NavigationContainer>
@@ -163,7 +172,7 @@ export default function App() {
                     <Stack.Screen name="AddCar" component={AddCarScreen} />
                 </Stack.Navigator>
             ) : (
-                <LoginStack />
+                <LoginStack setIsLoggedIn={setIsLoggedIn} />
             )}
         </NavigationContainer>
     );

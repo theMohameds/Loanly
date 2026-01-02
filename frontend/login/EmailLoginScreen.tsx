@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import {Text, TextInput, Pressable, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, Alert
-} from 'react-native';
+import {Text, TextInput, Pressable, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, Alert,}
+    from 'react-native';
 
-export default function EmailLoginScreen({ navigation }: any) {
+
+export default function EmailLoginScreen({ navigation, setIsLoggedIn }: any) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -26,20 +27,25 @@ export default function EmailLoginScreen({ navigation }: any) {
             return;
         }
 
-        // if All validations Is == succes then you can navigate to mainTabs
-        Alert.alert('Success', 'Login successful!');
-        navigation.navigate('MainTabs', { screen: 'Home' });
+        Alert.alert('Success', 'Login successful!', [
+            {
+                text: 'OK',
+                onPress: () => {
+                    setIsLoggedIn(true);
+                },
+            },
+        ]);
     };
 
     return (
         <ImageBackground
-            source={require('../assets/background.png')} // Background image
+            source={require('../assets/background.png')}
             style={styles.bg}
             resizeMode="cover"
         >
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             >
                 <ScrollView
                     contentContainerStyle={styles.scroll}
@@ -68,10 +74,7 @@ export default function EmailLoginScreen({ navigation }: any) {
                     />
 
                     {/* Login button */}
-                    <Pressable
-                        style={styles.button}
-                        onPress={handleLogin}
-                    >
+                    <Pressable style={styles.button} onPress={handleLogin}>
                         <Text style={styles.buttonText}>Login</Text>
                     </Pressable>
                 </ScrollView>
@@ -87,7 +90,7 @@ const styles = StyleSheet.create({
         fontSize: 32,
         fontWeight: '800',
         color: 'white',
-        marginBottom: 60, // pushes logo further to the top
+        marginBottom: 60,
         marginTop: 60,
         alignSelf: 'center',
     },
