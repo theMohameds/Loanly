@@ -1,86 +1,90 @@
 import React, { useState } from 'react';
-import {Text, TextInput, Pressable, StyleSheet, ImageBackground, KeyboardAvoidingView, ToastAndroid, Platform, ScrollView, Alert
+import {
+  Text, TextInput, Pressable, StyleSheet, ImageBackground,
+  KeyboardAvoidingView, ToastAndroid, Platform, ScrollView, Alert
 } from 'react-native';
+import { loginWithEmail } from '../../backend/firebaseAuth';
 
 export default function EmailLoginScreen({ navigation, onSignedIn }: any) {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-    // Login validation function
-    const handleLogin = () => {
-        // Check if both fields are filled
-        if (!email || !password) {
-            Alert.alert('Error', 'Please fill in both email and password');
-            return;
-        }
+  const handleLogin = async () => {
+    // Basic validations
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in both email and password');
+      return;
+    }
+    if (!email.includes('@') || !email.includes('.')) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
 
-        // Email validation
-        if (!email.includes('@') || !email.includes('.')) {
-            Alert.alert('Error', 'Please enter a valid email address');
-            return;
-        }
+    setLoading(true);
 
-        // Checking password length
-        if (password.length < 6) {
-            Alert.alert('Error', 'Password must be at least 6 characters');
-            return;
-        }
+    const { user, error } = await loginWithEmail(email, password);
 
-        // if All validations Is == succes then you can navigate to mainTabs
-        if(Platform.OS === 'android')  {
-            ToastAndroid.show('Login successful!', ToastAndroid.SHORT);
-            } else {
-                Alert.alert('Success', 'Login successful!');
-                }
-        //navigation.navigate('MainTabs', { screen: 'Home' });
-        onSignedIn();
-    };
+    setLoading(false);
 
-    return (
-        <ImageBackground
-            source={require('../assets/background.png')} // Background image
-            style={styles.bg}
-            resizeMode="cover"
+    if (user) {
+      // Login successful
+      onSignedIn(); 
+    } else {
+      // Show error
+      Alert.alert('Login Failed', 'Email or Password is incorrect');
+    }
+  };
+
+  return (
+    <ImageBackground
+      source={require('../assets/background.png')}
+      style={styles.bg}
+      resizeMode="cover"
+    >
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
         >
-            <KeyboardAvoidingView
-                style={{ flex: 1 }}
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
-            >
-                <ScrollView
-                    contentContainerStyle={styles.scroll}
-                    keyboardShouldPersistTaps="handled"
-                >
-                    <Text style={styles.logo}>LOANLY</Text>
+          <Text style={styles.logo}>LOANLY</Text>
 
-                    <TextInput
-                        style={styles.input}
-                        placeholder="E-mail"
-                        placeholderTextColor="#ccc"
-                        value={email}
-                        onChangeText={setEmail}
-                    />
+          <TextInput
+            style={styles.input}
+            placeholder="E-mail"
+            placeholderTextColor="#ccc"
+            value={email}
+            onChangeText={setEmail}
+          />
 
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Password"
-                        placeholderTextColor="#ccc"
-                        secureTextEntry
-                        value={password}
-                        onChangeText={setPassword}
-                    />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#ccc"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
 
-                    <Pressable
-                        style={styles.button}
-                        onPress={handleLogin}
-                    >
-                        <Text style={styles.buttonText}>Login</Text>
-                    </Pressable>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </ImageBackground>
-    );
+          <Pressable
+            style={[styles.button, loading && { opacity: 0.6 }]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>{loading ? 'Logging in...' : 'Login'}</Text>
+          </Pressable>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
+  );
 }
-
 const styles = StyleSheet.create({
     bg: { 
         flex: 1, 

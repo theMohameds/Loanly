@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -9,13 +9,10 @@ import {
     Alert,
     Modal,
 } from 'react-native';
-
-interface UserProfile {
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-}
+import { getAuth } from 'firebase/auth';
+import { getUserProfile, updateUserProfile, UserProfileData } from '../../backend/firestoreUser';
+import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons'; 
 
 interface PaymentMethod {
     id: string;
@@ -34,32 +31,32 @@ interface Document {
     size: string;
 }
 
+interface UserProfileLocal {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+}
+
 const ProfileScreen: React.FC = () => {
+    const navigation = useNavigation<any>();
+    const auth = getAuth();
+    const userId = auth.currentUser?.uid;
+
+    const [profile, setProfile] = useState<UserProfileLocal>({
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+    });
+
+    const [editedProfile, setEditedProfile] = useState<UserProfileLocal>(profile);
     const [isEditing, setIsEditing] = useState(false);
     const [showPaymentMethods, setShowPaymentMethods] = useState(false);
     const [showDocuments, setShowDocuments] = useState(false);
     const [showAddPayment, setShowAddPayment] = useState(false);
-
-    const [profile, setProfile] = useState<UserProfile>({
-        name: 'Jacob Donut',
-        email: 'jacob9@email.com',
-        phone: '+45 12345678',
-        address: 'Odense, Denmark',
-    });
-
-    const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
-
-    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
-        { id: '1', type: 'card', last4: '4242', name: 'Visa', expiryDate: '12/25', isDefault: true },
-        { id: '2', type: 'card', last4: '5555', name: 'Mastercard', expiryDate: '08/26', isDefault: false },
-    ]);
-
-    const [documents, setDocuments] = useState<Document[]>([
-        { id: '1', name: 'Invoice_2024_01.pdf', type: 'PDF', date: '2024-01-15', size: '245 KB' },
-        { id: '2', name: 'Receipt_2024_02.pdf', type: 'PDF', date: '2024-02-20', size: '189 KB' },
-        { id: '3', name: 'Contract_Agreement.pdf', type: 'PDF', date: '2024-03-10', size: '512 KB' },
-    ]);
-
+    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+    const [documents, setDocuments] = useState<Document[]>([]);
     const [newCard, setNewCard] = useState({
         number: '',
         name: '',
@@ -67,10 +64,58 @@ const ProfileScreen: React.FC = () => {
         cvv: '',
     });
 
-    const handleSave = () => {
-        setProfile(editedProfile);
-        setIsEditing(false);
-        Alert.alert('Success', 'Profile updated successfully');
+    useEffect(() => {
+    navigation.setOptions({
+        headerRight: () => (
+            <TouchableOpacity
+                onPress={() => navigation.navigate('SettingsScreen')}
+                style={{ marginRight: 16 }}
+            >
+                <Ionicons name="settings-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+        ),
+    });
+}, [navigation]);
+
+    // Load user profile
+    useEffect(() => {
+        if (!userId) return;
+        getUserProfile(userId).then((data) => {
+            if (data) {
+                const fullName = data.firstName + ' ' + data.lastName;
+                const localProfile: UserProfileLocal = {
+                    name: fullName,
+                    email: data.email,
+                    phone: data.phone,
+                    address: data.address,
+                };
+                setProfile(localProfile);
+                setEditedProfile(localProfile);
+            }
+        });
+    }, [userId]);
+
+    // Save profile changes
+    const handleSave = async () => {
+        if (!userId) return;
+        const [firstName, ...lastNameParts] = editedProfile.name.split(' ');
+        const lastName = lastNameParts.join(' ');
+        const data: UserProfileData = {
+            email: editedProfile.email,
+            firstName,
+            lastName,
+            phone: editedProfile.phone,
+            address: editedProfile.address,
+        };
+        try {
+            await updateUserProfile(userId, data);
+            setProfile(editedProfile);
+            setIsEditing(false);
+            Alert.alert('Success', 'Profile updated successfully');
+        } catch (error) {
+            console.error(error);
+            Alert.alert('Error', 'Failed to update profile');
+        }
     };
 
     const handleCancel = () => {
@@ -78,30 +123,24 @@ const ProfileScreen: React.FC = () => {
         setIsEditing(false);
     };
 
+    // Payment methods
     const handleDeletePayment = (id: string) => {
-        Alert.alert(
-            'Delete Payment Method',
-            'Are you sure you want to delete this payment method?',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Delete',
-                    style: 'destructive',
-                    onPress: () => {
-                        setPaymentMethods(paymentMethods.filter(pm => pm.id !== id));
-                        Alert.alert('Success', 'Payment method deleted');
-                    },
+        Alert.alert('Delete Payment Method', 'Are you sure?', [
+            { text: 'Cancel', style: 'cancel' },
+            {
+                text: 'Delete',
+                style: 'destructive',
+                onPress: () => {
+                    setPaymentMethods(paymentMethods.filter(pm => pm.id !== id));
+                    Alert.alert('Deleted');
                 },
-            ]
-        );
+            },
+        ]);
     };
 
     const handleSetDefaultPayment = (id: string) => {
-        setPaymentMethods(paymentMethods.map(pm => ({
-            ...pm,
-            isDefault: pm.id === id,
-        })));
-        Alert.alert('Success', 'Default payment method updated');
+        setPaymentMethods(paymentMethods.map(pm => ({ ...pm, isDefault: pm.id === id })));
+        Alert.alert('Default updated');
     };
 
     const handleAddPayment = () => {
@@ -109,7 +148,6 @@ const ProfileScreen: React.FC = () => {
             Alert.alert('Error', 'Please fill in all fields');
             return;
         }
-
         const newPayment: PaymentMethod = {
             id: Date.now().toString(),
             type: 'card',
@@ -118,35 +156,32 @@ const ProfileScreen: React.FC = () => {
             expiryDate: newCard.expiry,
             isDefault: paymentMethods.length === 0,
         };
-
         setPaymentMethods([...paymentMethods, newPayment]);
         setNewCard({ number: '', name: '', expiry: '', cvv: '' });
         setShowAddPayment(false);
-        Alert.alert('Success', 'Payment method added successfully');
+        Alert.alert('Added');
     };
 
+    // Documents
     const handleDeleteDocument = (id: string) => {
-        Alert.alert(
-            'Delete Document',
-            'Are you sure you want to delete this document?',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Delete',
-                    style: 'destructive',
-                    onPress: () => {
-                        setDocuments(documents.filter(doc => doc.id !== id));
-                        Alert.alert('Success', 'Document deleted');
-                    },
+        Alert.alert('Delete Document', 'Are you sure?', [
+            { text: 'Cancel', style: 'cancel' },
+            {
+                text: 'Delete',
+                style: 'destructive',
+                onPress: () => {
+                    setDocuments(documents.filter(doc => doc.id !== id));
+                    Alert.alert('Deleted');
                 },
-            ]
-        );
+            },
+        ]);
     };
 
     const handleDownloadDocument = (doc: Document) => {
         Alert.alert('Download', `Downloading ${doc.name}...`);
     };
 
+    // Modals
     const renderPaymentMethodsModal = () => (
         <Modal
             visible={showPaymentMethods}
@@ -162,48 +197,44 @@ const ProfileScreen: React.FC = () => {
                     <Text style={styles.modalTitle}>Payment Methods</Text>
                     <View style={{ width: 30 }} />
                 </View>
-
                 <ScrollView style={styles.modalContent}>
-                    {paymentMethods.map((method) => (
-                        <View key={method.id} style={styles.paymentCard}>
+                    {paymentMethods.map(pm => (
+                        <View key={pm.id} style={styles.paymentCard}>
                             <View style={styles.paymentCardHeader}>
                                 <View>
-                                    <Text style={styles.paymentCardName}>{method.name}</Text>
-                                    <Text style={styles.paymentCardNumber}>•••• {method.last4}</Text>
-                                    {method.expiryDate && (
-                                        <Text style={styles.paymentCardExpiry}>Expires {method.expiryDate}</Text>
+                                    <Text style={styles.paymentCardName}>{pm.name}</Text>
+                                    <Text style={styles.paymentCardNumber}>•••• {pm.last4}</Text>
+                                    {pm.expiryDate && (
+                                        <Text style={styles.paymentCardExpiry}>Expires {pm.expiryDate}</Text>
                                     )}
                                 </View>
                                 <View style={styles.paymentCardIcon}>
                                     <Text style={styles.cardIconText}>💳</Text>
                                 </View>
                             </View>
-
-                            {method.isDefault && (
+                            {pm.isDefault && (
                                 <View style={styles.defaultBadge}>
                                     <Text style={styles.defaultBadgeText}>Default</Text>
                                 </View>
                             )}
-
                             <View style={styles.paymentCardActions}>
-                                {!method.isDefault && (
+                                {!pm.isDefault && (
                                     <TouchableOpacity
                                         style={styles.actionButton}
-                                        onPress={() => handleSetDefaultPayment(method.id)}
+                                        onPress={() => handleSetDefaultPayment(pm.id)}
                                     >
                                         <Text style={styles.actionButtonText}>Set as Default</Text>
                                     </TouchableOpacity>
                                 )}
                                 <TouchableOpacity
                                     style={[styles.actionButton, styles.deleteButton]}
-                                    onPress={() => handleDeletePayment(method.id)}
+                                    onPress={() => handleDeletePayment(pm.id)}
                                 >
                                     <Text style={[styles.actionButtonText, styles.deleteButtonText]}>Delete</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
                     ))}
-
                     <TouchableOpacity
                         style={styles.addButton}
                         onPress={() => setShowAddPayment(true)}
@@ -230,7 +261,6 @@ const ProfileScreen: React.FC = () => {
                     <Text style={styles.modalTitle}>Add Card</Text>
                     <View style={{ width: 30 }} />
                 </View>
-
                 <ScrollView style={styles.modalContent}>
                     <View style={styles.formGroup}>
                         <Text style={styles.formLabel}>Card Number</Text>
@@ -244,7 +274,6 @@ const ProfileScreen: React.FC = () => {
                             maxLength={16}
                         />
                     </View>
-
                     <View style={styles.formGroup}>
                         <Text style={styles.formLabel}>Cardholder Name</Text>
                         <TextInput
@@ -255,7 +284,6 @@ const ProfileScreen: React.FC = () => {
                             placeholderTextColor="#666"
                         />
                     </View>
-
                     <View style={styles.formRow}>
                         <View style={[styles.formGroup, { flex: 1, marginRight: 10 }]}>
                             <Text style={styles.formLabel}>Expiry Date</Text>
@@ -268,7 +296,6 @@ const ProfileScreen: React.FC = () => {
                                 maxLength={5}
                             />
                         </View>
-
                         <View style={[styles.formGroup, { flex: 1 }]}>
                             <Text style={styles.formLabel}>CVV</Text>
                             <TextInput
@@ -283,7 +310,6 @@ const ProfileScreen: React.FC = () => {
                             />
                         </View>
                     </View>
-
                     <TouchableOpacity style={styles.submitButton} onPress={handleAddPayment}>
                         <Text style={styles.submitButtonText}>Add Card</Text>
                     </TouchableOpacity>
@@ -296,10 +322,10 @@ const ProfileScreen: React.FC = () => {
         <Modal
             visible={showDocuments}
             animationType="slide"
-            presentationStyle="pageSheet"
+            transparent={false}
             onRequestClose={() => setShowDocuments(false)}
         >
-            <View style={styles.modalContainer}>
+            <View style={{ flex: 1, backgroundColor: '#100f0f' }}>
                 <View style={styles.modalHeader}>
                     <TouchableOpacity onPress={() => setShowDocuments(false)}>
                         <Text style={styles.modalCloseButton}>✕</Text>
@@ -307,8 +333,7 @@ const ProfileScreen: React.FC = () => {
                     <Text style={styles.modalTitle}>Documents</Text>
                     <View style={{ width: 30 }} />
                 </View>
-
-                <ScrollView style={styles.modalContent}>
+                <ScrollView contentContainerStyle={{ padding: 20 }}>
                     {documents.map((doc) => (
                         <View key={doc.id} style={styles.documentCard}>
                             <View style={styles.documentIcon}>
@@ -334,7 +359,6 @@ const ProfileScreen: React.FC = () => {
                             </View>
                         </View>
                     ))}
-
                     {documents.length === 0 && (
                         <View style={styles.emptyState}>
                             <Text style={styles.emptyStateText}>No documents yet</Text>
@@ -347,13 +371,17 @@ const ProfileScreen: React.FC = () => {
 
     return (
         <ScrollView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>My Profile</Text>
-            </View>
+            
 
             <View style={styles.profileImageContainer}>
                 <View style={styles.profileImage}>
-                    <Text style={styles.profileImageText}>JD</Text>
+                    <Text style={styles.profileImageText}>
+                        {profile.name
+                            .split(' ')
+                            .map(n => n[0]?.toUpperCase() || '')
+                            .join('')
+                            .slice(0, 2) || 'U'}
+                    </Text>
                 </View>
                 {!isEditing && (
                     <TouchableOpacity style={styles.editButton} onPress={() => setIsEditing(true)}>
@@ -363,67 +391,25 @@ const ProfileScreen: React.FC = () => {
             </View>
 
             <View style={styles.infoSection}>
-                <View style={styles.infoRow}>
-                    <Text style={styles.label}>Name</Text>
-                    {isEditing ? (
-                        <TextInput
-                            style={styles.input}
-                            value={editedProfile.name}
-                            onChangeText={(text) => setEditedProfile({ ...editedProfile, name: text })}
-                            placeholder="Enter your name"
-                            placeholderTextColor="#666"
-                        />
-                    ) : (
-                        <Text style={styles.value}>{profile.name}</Text>
-                    )}
-                </View>
-
-                <View style={styles.infoRow}>
-                    <Text style={styles.label}>Email</Text>
-                    {isEditing ? (
-                        <TextInput
-                            style={styles.input}
-                            value={editedProfile.email}
-                            onChangeText={(text) => setEditedProfile({ ...editedProfile, email: text })}
-                            placeholder="Enter your email"
-                            placeholderTextColor="#666"
-                            keyboardType="email-address"
-                        />
-                    ) : (
-                        <Text style={styles.value}>{profile.email}</Text>
-                    )}
-                </View>
-
-                <View style={styles.infoRow}>
-                    <Text style={styles.label}>Phone</Text>
-                    {isEditing ? (
-                        <TextInput
-                            style={styles.input}
-                            value={editedProfile.phone}
-                            onChangeText={(text) => setEditedProfile({ ...editedProfile, phone: text })}
-                            placeholder="Enter your phone"
-                            placeholderTextColor="#666"
-                            keyboardType="phone-pad"
-                        />
-                    ) : (
-                        <Text style={styles.value}>{profile.phone}</Text>
-                    )}
-                </View>
-
-                <View style={styles.infoRow}>
-                    <Text style={styles.label}>Address</Text>
-                    {isEditing ? (
-                        <TextInput
-                            style={styles.input}
-                            value={editedProfile.address}
-                            onChangeText={(text) => setEditedProfile({ ...editedProfile, address: text })}
-                            placeholder="Enter your address"
-                            placeholderTextColor="#666"
-                        />
-                    ) : (
-                        <Text style={styles.value}>{profile.address}</Text>
-                    )}
-                </View>
+                {['name', 'email', 'phone', 'address'].map((field) => (
+                    <View key={field} style={styles.infoRow}>
+                        <Text style={styles.label}>{field.charAt(0).toUpperCase() + field.slice(1)}</Text>
+                        {isEditing ? (
+                            <TextInput
+                                style={styles.input}
+                                value={editedProfile[field as keyof UserProfileLocal]}
+                                onChangeText={(text) =>
+                                    setEditedProfile({ ...editedProfile, [field]: text })
+                                }
+                                placeholder={`Enter your ${field}`}
+                                placeholderTextColor="#666"
+                                keyboardType={field === 'email' ? 'email-address' : field === 'phone' ? 'phone-pad' : 'default'}
+                            />
+                        ) : (
+                            <Text style={styles.value}>{profile[field as keyof UserProfileLocal]}</Text>
+                        )}
+                    </View>
+                ))}
             </View>
 
             {isEditing && (
@@ -462,12 +448,14 @@ const ProfileScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+    button: { backgroundColor: '#0088FF', padding: 15, borderRadius: 8 },
+    buttonText: { color: '#fff', fontWeight: 'bold' },
     container: {
         flex: 1,
-        backgroundColor: '#212121ff',
+        backgroundColor: '#1a1a1a',
     },
     header: {
-        backgroundColor: '#252525ff',
+        backgroundColor: '#1d1d1d',
         padding: 20,
         paddingTop: 45,
         alignItems: 'center',
@@ -562,7 +550,7 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 8,
         alignItems: 'center',
-        
+
     },
     cancelButtonText: {
         color: '#ffffffff',
@@ -758,7 +746,7 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         flexDirection: 'row',
         alignItems: 'center',
-        
+
     },
     documentIcon: {
         width: 50,

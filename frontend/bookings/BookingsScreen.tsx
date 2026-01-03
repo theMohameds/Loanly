@@ -2,28 +2,69 @@ import React, { useState, useCallback } from "react";
 import {
     View,
     Text,
-    FlatList,
+    ScrollView,
     StyleSheet,
     TouchableOpacity,
     ActivityIndicator,
     Image,
-    ScrollView,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
-import { getAllBookings } from "../../backend/database/bookingsDB";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { getMyBookings } from "../../backend/bookingsFirestore";
+import { getCarWithOwnerName } from "../../backend/firestoreUser";
 
-export default function BookingsScreen({ navigation }: any) {
+type UIStatus = "Upcoming" | "Ongoing" | "Done" | "Cancelled";
+
+const getBookingUIStatus = (
+    firestoreStatus: "pending" | "cancelled",
+    start: string | number,
+    end: string | number
+): UIStatus => {
+    if (firestoreStatus === "cancelled") return "Cancelled";
+
+    const now = Date.now();
+    const startTime = new Date(start).getTime();
+    const endTime = new Date(end).getTime();
+
+    if (now < startTime) return "Upcoming";
+    if (now > endTime) return "Done";
+    return "Ongoing";
+};
+
+const getStatusColor = (status: UIStatus) => {
+    switch (status) {
+        case "Upcoming":
+            return "#3B82F6";
+        case "Ongoing":
+            return "#10B981";
+        case "Done":
+            return "#6B7280";
+        case "Cancelled":
+            return "#DC2626";
+        default:
+            return "#999";
+    }
+};
+
+export default function BookingsScreen() {
+    const navigation = useNavigation<any>();
     const [bookings, setBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [statusFilter, setStatusFilter] = useState<UIStatus | undefined>(undefined);
 
-    const formatDate = (iso: string) =>
-        new Date(iso).toLocaleString(undefined, {
-            weekday: "short",
-            month: "short",
-            day: "numeric",
+    const formatDate = (value: string | number | undefined) => {
+        if (!value) return "Invalid Date";
+        const date = new Date(value);
+        if (isNaN(date.getTime())) return "Invalid Date";
+
+        return date.toLocaleString(undefined, {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
             hour: "2-digit",
             minute: "2-digit",
+            hour12: false,
         });
+    };
 
     useFocusEffect(
         useCallback(() => {
@@ -31,8 +72,14 @@ export default function BookingsScreen({ navigation }: any) {
 
             async function loadBookings() {
                 try {
-                    const rows = await getAllBookings();
-                    if (isActive) setBookings(rows);
+                    const rows = await getMyBookings();
+                    const bookingsWithCars = await Promise.all(
+                        rows.map(async (booking: any) => {
+                            const car = await getCarWithOwnerName(booking.carId);
+                            return { ...booking, car };
+                        })
+                    );
+                    if (isActive) setBookings(bookingsWithCars);
                 } catch (err) {
                     console.error("Failed to load bookings:", err);
                 } finally {
@@ -41,134 +88,123 @@ export default function BookingsScreen({ navigation }: any) {
             }
 
             loadBookings();
-
             return () => {
                 isActive = false;
             };
         }, [])
     );
 
+    const filteredBookings = bookings
+        .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
+        .filter((item) => {
+            const status = getBookingUIStatus(item.status, item.startDate, item.endDate);
+            return !statusFilter || status === statusFilter;
+        });
+
     if (loading) {
         return (
-            <View>
-                <ActivityIndicator size="large" color="#fff" />
+            <View style={styles.centered}>
+                <ActivityIndicator size="large" color="#3B82F6" />
             </View>
         );
     }
-    
 
- return (
-    <ScrollView style={styles.container}>
-        <View style={styles.header}>
-            <Text style={styles.headerTitle}>My Bookings</Text>
-        </View>
+    return (
+        <ScrollView style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>My Bookings</Text>
+            </View>
 
-        <View style={styles.overlay}>
-            {bookings.length === 0 ? (
-                <Text style={styles.emptyText}>No bookings found.</Text>
-            ) : (
-                bookings.map((item) => {
-                    const carName = `${item.make} ${item.model} ${item.trim}`;
+            <View style={styles.filterBar}>
+                {["Upcoming", "Ongoing", "Done", "Cancelled"].map((option) => (
+                    <TouchableOpacity
+                        key={option}
+                        style={[styles.filterButton, statusFilter === option && styles.filterButtonActive]}
+                        onPress={() => setStatusFilter(statusFilter === option ? undefined : (option as UIStatus))}
+                    >
+                        <Text style={styles.filterText}>{option}</Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+
+            <View style={styles.overlay}>
+                {filteredBookings.map((item) => {
+                    const status = getBookingUIStatus(item.status, item.startDate, item.endDate);
+
                     return (
                         <TouchableOpacity
-                                key={item.bookingId}
-                                style={styles.card}
-                                onPress={() =>
-                                    navigation.navigate("BookingDetails", { booking: item })
-                                }
-                            >
+                            key={item.bookingId}
+                            activeOpacity={0.85}
+                            onPress={() =>
+                                navigation.navigate("BookingDetails", { bookingId: item.bookingId })
+                            }
+                        >
+                            <View style={styles.card}>
                                 <Image
-                                    source={require("../assets/placeholderimage.png")}
+                                    source={
+                                        item.car?.imageUrl
+                                            ? { uri: item.car.imageUrl }
+                                            : require("../assets/audi-etron-gt.png")
+                                    }
                                     style={styles.image}
                                 />
-                                <View>
-                                    <Text style={styles.car}>{carName}</Text>
-                                    <Text style={styles.price}>{item.pricePerDay} DKK/day</Text>
-                                    <Text style={styles.label}>
-                                        Pickup: {formatDate(item.start_datetime)}
-                                    </Text>
-                                    <Text style={styles.label}>
-                                        Dropoff: {formatDate(item.end_datetime)}
-                                    </Text>
+
+                                <View style={styles.cardInfo}>
+                                    
+                                    <View style={styles.topRow}>
+                                        <Text style={styles.car} numberOfLines={1} ellipsizeMode="tail">
+                                            {item.car?.make} {item.car?.model}
+                                        </Text>
+                                        <Text style={styles.price}>
+                                            {item.car?.pricePerDay ?? 0} DKK/day
+                                        </Text>
+                                    </View>
+                                    
+                                    <Text style={styles.label}>Pickup: {formatDate(item.startDate)}</Text>
+
+                                    <View style={styles.dropoffRow}>
+                                        <Text style={styles.label}>Dropoff: {formatDate(item.endDate)}</Text>
+                                        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(status) }]}>
+                                            <Text style={styles.statusText}>{status}</Text>
+                                        </View>
+                                    </View>
                                 </View>
-                            </TouchableOpacity>
-                        );
-                    })
-                )}
+                            </View>
+                        </TouchableOpacity>
+                    );
+                })}
             </View>
         </ScrollView>
     );
-
 }
 
-
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#212121ff",
-    },
-    header: {
-        backgroundColor: '#252525ff',
-        padding: 20,
-        paddingTop: 45,
-        alignItems: 'center',
-        // iOS shadow
-        shadowColor: "#000000ff",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
-        // Android shadow
-        elevation: 6,
-    },
-    headerTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#ffffff',
-    },
-    safeArea: {
-        flex: 1,
-        backgroundColor: "#212121ff",
-    },
-    overlay: {
-        flex: 1,
-        paddingVertical: 20,
-        marginHorizontal: 20,
-    },
-    card: {
-        backgroundColor: "#303030ff",
-        borderRadius: 10,
-        marginBottom: 18,
-        overflow: "hidden",
-        padding: 14,
-    },
-    image: {
-        width: "100%",
-        height: 160,
-        borderRadius: 14,
+    topRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
         marginBottom: 8,
-        resizeMode: "cover",
-    },
-    car: {
-        color: "#fff",
-        fontSize: 20,
-        fontWeight: "800",
-        marginBottom: 4,
     },
     price: {
         color: "#fff",
-        fontSize: 16,
-        fontWeight: "700",
-        marginBottom: 4,
+        fontWeight: "600",
     },
-    label: {
-        color: "#bbb",
-        fontSize: 14,
-        marginTop: 4,
-    },
-    emptyText: {
-        color: "#fff",
-        textAlign: "center",
-        marginTop: 50,
-    },
-});
 
+    container: { flex: 1, backgroundColor: "#1a1a1a" },
+    header: { padding: 20, paddingTop: 45, alignItems: "center", backgroundColor: "#1d1d1d" },
+    headerTitle: { color: "#fff", fontSize: 22, fontWeight: "bold" },
+    filterBar: { flexDirection: "row", justifyContent: "space-around", marginTop: 16, marginHorizontal: 16 },
+    filterButton: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20, backgroundColor: "#444" },
+    filterButtonActive: { backgroundColor: "#2563EB" },
+    filterText: { color: "#fff", fontWeight: "600" },
+    overlay: { padding: 16 },
+    card: { backgroundColor: "#242424", borderRadius: 16, marginBottom: 18, overflow: "hidden" },
+    image: { width: "100%", height: 180 },
+    cardInfo: { padding: 14 },
+    car: { color: "#fff", fontSize: 18, fontWeight: "700" },
+    label: { color: "#bbb", marginTop: 4 },
+    dropoffRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    statusBadge: { paddingVertical: 4, paddingHorizontal: 8, borderRadius: 12 },
+    statusText: { color: "#fff", fontWeight: "600", fontSize: 12 },
+    centered: { flex: 1, justifyContent: "center", alignItems: "center" },
+});
