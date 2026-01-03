@@ -10,7 +10,7 @@ import {
     Modal,
 } from 'react-native';
 import { getAuth } from 'firebase/auth';
-import { getUserProfile, updateUserProfile, UserProfileData } from '../../backend/firestoreUser';
+import { getUserProfile, updateUserProfile, UserProfileData } from '../../backend/firebase/firestoreUser';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons'; 
 

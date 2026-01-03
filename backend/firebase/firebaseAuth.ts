@@ -1,5 +1,5 @@
 import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import app from "../firebaseConfig";
+import app from "../../firebaseConfig";
 import { Alert } from "react-native";
 
 const auth = getAuth(app);

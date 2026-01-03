@@ -1,4 +1,4 @@
-import { addCar, CarData } from '../carFirestore';
+import { addCar, CarData } from '../firebase/carFirestore';
 
 const dummyCars: CarData[] = [
     { make: 'Audi', model: 'A4', trim: 'Premium', carType: 'Sedan', fuelType: 'Gasoline', year: 2020, seats: 5, pricePerDay: 80, pickupLocation: 'Odense Center', dropoffLocation: 'Odense Center', rating: 4.5 },

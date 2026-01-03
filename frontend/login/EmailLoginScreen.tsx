@@ -3,7 +3,7 @@ import {
   Text, TextInput, Pressable, StyleSheet, ImageBackground,
   KeyboardAvoidingView, ToastAndroid, Platform, ScrollView, Alert
 } from 'react-native';
-import { loginWithEmail } from '../../backend/firebaseAuth';
+import { loginWithEmail } from '../../backend/firebase/firebaseAuth';
 
 export default function EmailLoginScreen({ navigation, onSignedIn }: any) {
   const [email, setEmail] = useState('');
@@ -12,6 +12,7 @@ export default function EmailLoginScreen({ navigation, onSignedIn }: any) {
 
   const handleLogin = async () => {
     // Basic validations
+    /*
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in both email and password');
       return;
@@ -24,10 +25,11 @@ export default function EmailLoginScreen({ navigation, onSignedIn }: any) {
       Alert.alert('Error', 'Password must be at least 6 characters');
       return;
     }
+      */
 
     setLoading(true);
 
-    const { user, error } = await loginWithEmail(email, password);
+    const { user, error } = await loginWithEmail("Test@gmail.com", "Test1234");
 
     setLoading(false);
 

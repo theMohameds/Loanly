@@ -1,33 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
     View,
     Text,
     TextInput,
     TouchableOpacity,
     StyleSheet,
-    ImageBackground,
+    Image,
+    Alert,
+    ScrollView,
     KeyboardAvoidingView,
+    Keyboard,
     Platform,
     SafeAreaView,
-    ScrollView,
-    Image,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { addCar, CarData } from "../../backend/carFirestore";
+import { addCar, CarData } from "../../backend/firebase/carFirestore";
 
-const carTypes = [
-    "Sedan", "SUV", "Hatchback", "Coupe", "Convertible",
-    "Wagon", "Van", "Pickup Truck", "Crossover", "Minivan",
-];
-
-const carFuel = [
-    "Electric", "Hybrid", "Plug-in Hybrid", "Petrol",
-    "Diesel", "Hydrogen", "LPG", "CNG", "Flex Fuel", "Bio-Diesel",
-];
+// Constants
+const carTypes = ["Sedan", "SUV", "Hatchback", "Coupe", "Convertible", "Wagon", "Van", "Pickup Truck", "Crossover", "Minivan"];
+const carFuel = ["Electric", "Hybrid", "Plug-in Hybrid", "Petrol", "Diesel", "Hydrogen", "LPG", "CNG", "Flex Fuel", "Bio-Diesel"];
 
 type Props = { navigation: any };
 
 export default function AddCarScreen({ navigation }: Props) {
+    // Input states
     const [make, setMake] = useState("");
     const [model, setModel] = useState("");
     const [trim, setTrim] = useState("");
@@ -39,12 +35,22 @@ export default function AddCarScreen({ navigation }: Props) {
     const [pickupLocation, setPickupLocation] = useState("");
     const [dropoffLocation, setDropoffLocation] = useState("");
     const [image, setImage] = useState<string | null>(null);
-
     const [errors, setErrors] = useState<Record<string, boolean>>({});
 
-    const pickImage = async () => {
+    // Keyboard height
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const MAX_EXTRA_SCROLL = 10;
+
+    useEffect(() => {
+        const showListener = Keyboard.addListener("keyboardDidShow", e => setKeyboardHeight(e.endCoordinates.height));
+        const hideListener = Keyboard.addListener("keyboardDidHide", () => setKeyboardHeight(0));
+        return () => { showListener.remove(); hideListener.remove(); };
+    }, []);
+
+    // Image picker
+    const pickImage = useCallback(async () => {
         const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permission.granted) return alert("Media permission required");
+        if (!permission.granted) return Alert.alert("Media permission required");
 
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -54,22 +60,22 @@ export default function AddCarScreen({ navigation }: Props) {
         });
 
         if (!result.canceled) setImage(result.assets[0].uri);
-    };
+    }, []);
 
-    const confirmCar = async () => {
+    // Confirm car
+    const confirmCar = useCallback(async () => {
         const newErrors = {
-            make: make.trim() === "",
-            model: model.trim() === "",
-            trim: trim.trim() === "",
+            make: !make.trim(),
+            model: !model.trim(),
+            trim: !trim.trim(),
             carType: !carType,
             fuelType: !fuelType,
             year: isNaN(Number(year)),
             seats: isNaN(Number(seats)),
             pricePerDay: isNaN(Number(pricePerDay)),
-            pickupLocation: pickupLocation.trim() === "",
-            dropoffLocation: dropoffLocation.trim() === "",
+            pickupLocation: !pickupLocation.trim(),
+            dropoffLocation: !dropoffLocation.trim(),
         };
-
         setErrors(newErrors);
         if (Object.values(newErrors).some(Boolean)) return;
 
@@ -85,187 +91,115 @@ export default function AddCarScreen({ navigation }: Props) {
             pickupLocation: pickupLocation.trim(),
             dropoffLocation: dropoffLocation.trim(),
             rating: 0,
-
         };
 
         try {
             await addCar(newCar);
-            alert("Car added successfully!");
+            Alert.alert("Success", "Car added successfully!");
             navigation.goBack();
         } catch (err) {
             console.error(err);
-            alert("Failed to save car");
+            Alert.alert("Error", "Failed to save car");
         }
-    };
+    }, [make, model, trim, carType, fuelType, year, seats, pricePerDay, pickupLocation, dropoffLocation]);
+
+    // Helper to render input fields
+    const renderInput = (label: string, value: string, setter: (text: string) => void, keyboardType: any = "default") => (
+        <View style={{ marginBottom: 16 }}>
+            <Text style={styles.cardLabel}>{label}</Text>
+            <TextInput
+                style={[styles.input, errors[label] && styles.error]}
+                value={value}
+                onChangeText={setter}
+                placeholder={`Enter ${label.toLowerCase()}`}
+                placeholderTextColor="#999"
+                keyboardType={keyboardType}
+            />
+        </View>
+    );
+
+    const renderChipSelector = (label: string, options: string[], selected: string | null, setter: (val: string) => void) => (
+        <View style={{ marginBottom: 24 }}>
+            <Text style={styles.cardLabel}>{label}</Text>
+            <View style={styles.chipWrap}>
+                {options.map(opt => (
+                    <TouchableOpacity
+                        key={opt}
+                        style={[styles.chip, selected === opt && styles.chipActive]}
+                        onPress={() => setter(opt)}
+                    >
+                        <Text style={styles.chipText}>{opt}</Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+        </View>
+    );
 
     return (
-
-
-        <View style={styles.overlay}>
+        <SafeAreaView style={styles.overlay}>
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Add Car</Text>
             </View>
-            <SafeAreaView style={{ flex: 1 }}>
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === "ios" ? "padding" : undefined}
-                    style={{ flex: 1 }}
+
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+            >
+                <ScrollView
+                    contentContainerStyle={{
+                        padding: 24,
+                        paddingBottom: 24 + Math.min(keyboardHeight, MAX_EXTRA_SCROLL),
+                    }}
+                    keyboardShouldPersistTaps="handled"
                 >
 
-                    <ScrollView contentContainerStyle={styles.content}>
-
-
+                    <View style={{ marginBottom: 24 }}>
                         <Text style={styles.cardLabel}>CAR IMAGE</Text>
                         <TouchableOpacity style={styles.carImage} onPress={pickImage}>
-                            {image ? (
-                                <Image source={{ uri: image }} style={styles.image} />
-                            ) : (
-                                <Text style={styles.placeholder}>Tap to select image</Text>
-                            )}
+                            {image ? <Image source={{ uri: image }} style={styles.image} /> : <Text style={styles.placeholder}>Tap to select image</Text>}
                         </TouchableOpacity>
+                    </View>
 
-                        {[
-                            ["MAKE", make, setMake],
-                            ["MODEL", model, setModel],
-                            ["TRIM", trim, setTrim],
-                            ["PICKUP LOCATION", pickupLocation, setPickupLocation],
-                            ["DROPOFF LOCATION", dropoffLocation, setDropoffLocation],
-                        ].map(([label, value, setter]: any) => (
-                            <View key={label}>
-                                <Text style={styles.cardLabel}>{label}</Text>
-                                <TextInput
-                                    style={[styles.input, errors[label] && styles.error]}
-                                    value={value}
-                                    onChangeText={setter}
-                                    placeholder={`Enter ${label.toLowerCase()}`}
-                                    placeholderTextColor="#999"
-                                />
-                            </View>
-                        ))}
+                    {renderInput("MAKE", make, setMake)}
+                    {renderInput("MODEL", model, setModel)}
+                    {renderInput("TRIM", trim, setTrim)}
+                    {renderInput("PICKUP LOCATION", pickupLocation, setPickupLocation)}
+                    {renderInput("DROPOFF LOCATION", dropoffLocation, setDropoffLocation)}
 
-                        
+                    {renderChipSelector("CAR TYPE", carTypes, carType, setCarType)}
+                    {renderChipSelector("FUEL TYPE", carFuel, fuelType, setFuelType)}
 
-                        <Text style={styles.cardLabel}>CAR TYPE</Text>
-                        <View style={styles.chipWrap}>
-                            {carTypes.map(type => (
-                                <TouchableOpacity
-                                    key={type}
-                                    style={[
-                                        styles.chip,
-                                        carType === type && styles.chipActive,
-                                    ]}
-                                    onPress={() => setCarType(type)}
-                                >
-                                    <Text style={styles.chipText}>{type}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
+                    {renderInput("YEAR", year, setYear, "number-pad")}
+                    {renderInput("SEATS", seats, setSeats, "number-pad")}
+                    {renderInput("PRICE PER DAY", pricePerDay, setPricePerDay, "number-pad")}
 
-                        
-
-                        <Text style={styles.cardLabel}>FUEL TYPE</Text>
-                        <View style={styles.chipWrap}>
-                            {carFuel.map(fuel => (
-                                <TouchableOpacity
-                                    key={fuel}
-                                    style={[
-                                        styles.chip,
-                                        fuelType === fuel && styles.chipActive,
-                                    ]}
-                                    onPress={() => setFuelType(fuel)}
-                                >
-                                    <Text style={styles.chipText}>{fuel}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-
-                        
-                        {[
-                            ["YEAR", year, setYear],
-                            ["SEATS", seats, setSeats],
-                            ["PRICE PER DAY", pricePerDay, setPricePerDay],
-                        ].map(([label, value, setter]: any) => (
-                            <View key={label}>
-                                <Text style={styles.cardLabel}>{label}</Text>
-                                <TextInput
-                                    style={[styles.input, errors[label] && styles.error]}
-                                    keyboardType="number-pad"
-                                    value={value}
-                                    onChangeText={setter}
-                                />
-                            </View>
-                        ))}
-
-                        
-                        <TouchableOpacity style={[styles.bookButton, { backgroundColor: "#3865e0ff" }]} onPress={confirmCar}>
-                            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "700" }}>Add Car</Text>
+                    <View style={{ marginBottom: 24 }}>
+                        <TouchableOpacity style={styles.button} onPress={confirmCar}>
+                            <Text style={styles.buttonText}>Add Car</Text>
                         </TouchableOpacity>
+                    </View>
 
-
-                    </ScrollView>
-                </KeyboardAvoidingView>
-            </SafeAreaView>
-        </View>
-
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    header: {
-        backgroundColor: '#1d1d1d',
-        padding: 20,
-        paddingTop: 45,
-        alignItems: 'center',
-        shadowColor: "#000000ff",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
-        elevation: 6,
-    },
-    headerTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#ffffff',
-    },
-    background: { flex: 1 },
     overlay: { flex: 1, backgroundColor: "#1a1a1a" },
-    content: { padding: 24 },
+    header: { backgroundColor: "#1d1d1d", padding: 20, paddingTop: 45, alignItems: "center" },
+    headerTitle: { fontSize: 22, fontWeight: "bold", color: "#fff" },
     cardLabel: { color: "#fff", marginBottom: 6, fontWeight: "700" },
-    input: {
-        backgroundColor: "#303030",
-        height: 54,
-        borderRadius: 14,
-        paddingHorizontal: 16,
-        color: "#fff",
-        marginBottom: 18,
-    },
+    input: { backgroundColor: "#303030", height: 54, borderRadius: 14, paddingHorizontal: 16, color: "#fff" },
     error: { borderColor: "#FF5A5F", borderWidth: 2 },
-    carImage: {
-        height: 180,
-        borderRadius: 16,
-        backgroundColor: "#303030",
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: 24,
-    },
+    carImage: { height: 180, borderRadius: 16, backgroundColor: "#303030", alignItems: "center", justifyContent: "center", marginBottom: 24 },
     image: { width: "100%", height: "100%", borderRadius: 16 },
     placeholder: { color: "#aaa" },
-    chipWrap: { flexDirection: "row", flexWrap: "wrap", marginBottom: 24 },
-    chip: {
-        paddingVertical: 8,
-        paddingHorizontal: 14,
-        borderRadius: 20,
-        backgroundColor: "#303030",
-        margin: 4,
-    },
+    chipWrap: { flexDirection: "row", flexWrap: "wrap" },
+    chip: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 20, backgroundColor: "#303030", margin: 4 },
     chipActive: { backgroundColor: "#3865e0ff" },
     chipText: { color: "#fff", fontSize: 13 },
-    confirm: {
-        backgroundColor: "#3865e0ff",
-        height: 56,
-        borderRadius: 18,
-        alignItems: "center",
-        justifyContent: "center",
-        marginTop: 10,
-    },
-    bookButton: { paddingVertical: 16, borderRadius: 16, alignItems: "center", marginTop: 32, },
+    button: { paddingVertical: 16, borderRadius: 16, alignItems: "center", marginTop: 16,  backgroundColor: "#3865e0ff" },
+    buttonText: { color: "#fff", fontSize: 18, fontWeight: "700" },
 });

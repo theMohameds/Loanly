@@ -7,27 +7,19 @@ import {
     ScrollView,
     TouchableOpacity,
     Image,
-    Platform,
-    FlatList,
     Dimensions,
     SafeAreaView,
+    Platform,
 } from "react-native";
-import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { CarData } from "../../backend/carFirestore";
-import { getCarWithOwnerName } from "../../backend/firestoreUser";
-import { createBooking } from "../../backend/bookingsFirestore";
+import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
+import { CarData } from "../../backend/firebase/carFirestore";
+import { getCarWithOwnerName } from "../../backend/firebase/firestoreUser";
+import { createBooking } from "../../backend/firebase/bookingsFirestore";
 
 type RootStackParamList = {
-    Rental: undefined;
-    AddCarStack: undefined;
-    Confirmation: {
-        carId: string;
-        theme?: "light" | "dark";
-    };
+    Confirmation: { carId: string };
 };
-
 
 type ConfirmationScreenRouteProp = RouteProp<RootStackParamList, "Confirmation">;
 
@@ -45,19 +37,19 @@ const carImages = [
 export default function ConfirmationScreen() {
     const route = useRoute<ConfirmationScreenRouteProp>();
     const navigation = useNavigation();
-    const { carId, theme = "dark" } = route.params;
+    const { carId } = route.params;
 
     const [car, setCar] = useState<(CarData & { id: string; ownerName?: string }) | null>(null);
     const [loading, setLoading] = useState(true);
+    const [activeImage, setActiveImage] = useState(0);
 
+    // Date pickers
     const [startDate, setStartDate] = useState<Date>(new Date());
     const [endDate, setEndDate] = useState<Date>(new Date());
     const [showStartPicker, setShowStartPicker] = useState(false);
     const [showEndPicker, setShowEndPicker] = useState(false);
     const [startMode, setStartMode] = useState<"date" | "time">("date");
     const [endMode, setEndMode] = useState<"date" | "time">("date");
-
-    const [activeImage, setActiveImage] = useState(0);
 
     useEffect(() => {
         const fetchCar = async () => {
@@ -68,9 +60,8 @@ export default function ConfirmationScreen() {
         fetchCar();
     }, [carId]);
 
-    if (loading)
-        return <ActivityIndicator size="large" style={styles.centered} color={theme === "dark" ? "#fff" : "#000"} />;
-    if (!car) return <Text style={[styles.centered, { color: theme === "dark" ? "#fff" : "#000" }]}>Car not found</Text>;
+    if (loading) return <ActivityIndicator size="large" style={styles.centered} color="#fff" />;
+    if (!car) return <Text style={[styles.centered, { color: "#fff" }]}>Car not found</Text>;
 
     const displayFields: { key: keyof CarData | "ownerName"; label: string }[] = [
         { key: "make", label: "Make" },
@@ -118,39 +109,12 @@ export default function ConfirmationScreen() {
         }
     };
 
-    const colors = theme === "dark"
-        ? {
-            background: "#1a1a1a",
-            textPrimary: "#FFFFFF",
-            textSecondary: "#C0C0C0",
-            card: "#242424",
-            card2: "#2e2e2eff",
-            separator: "#3A3A3A",
-            button: "#3865e0ff",
-            backButtonOverlay: "rgba(0,0,0,0.35)",
-            backButton: "#FFFFFF",
-        }
-        : {
-            background: "#FFFFFF",
-            textPrimary: "#1F2937",
-            textSecondary: "#4B5563",
-            card: "#F9FAFB",
-            card2: "#242424",
-            separator: "#E5E7EB",
-            button: "#3865e0ff",
-            backButtonOverlay: "rgba(255,255,255,0.8)",
-            backButton: "#FFFFFF",
-        };
-
-
     return (
-        <SafeAreaView style={[styles.background, { backgroundColor: colors.background }]}>
-            <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={{ paddingBottom: 70 }}>
-                
-
+        <SafeAreaView style={styles.background}>
+            <ScrollView contentContainerStyle={{ paddingBottom: 70 }}>
+                {/* Carousel */}
                 <View style={styles.carouselContainer}>
-                    <FlatList
-                        data={carImages}
+                    <ScrollView
                         horizontal
                         pagingEnabled
                         showsHorizontalScrollIndicator={false}
@@ -158,9 +122,11 @@ export default function ConfirmationScreen() {
                             const index = Math.round(ev.nativeEvent.contentOffset.x / width);
                             setActiveImage(index);
                         }}
-                        keyExtractor={(_, i) => i.toString()}
-                        renderItem={({ item }) => <Image source={item} style={styles.heroImage} />}
-                    />
+                    >
+                        {carImages.map((img, i) => (
+                            <Image key={i} source={img} style={styles.heroImage} />
+                        ))}
+                    </ScrollView>
                     <View style={styles.dotsContainer}>
                         {carImages.map((_, i) => (
                             <View key={i} style={[styles.dot, { opacity: i === activeImage ? 1 : 0.3 }]} />
@@ -168,31 +134,28 @@ export default function ConfirmationScreen() {
                     </View>
                 </View>
 
-                
-                <View style={[styles.carInfoContainer, { backgroundColor: colors.card }]}>
-                    <Text style={[styles.header, { color: colors.textPrimary }]}>{car.make} {car.model}</Text>
+                {/* Car Info */}
+                <View style={styles.carInfoContainer}>
+                    <Text style={styles.header}>{car.make} {car.model}</Text>
                     {displayFields.map(({ key, label }) =>
                         car[key] !== undefined ? (
                             <View key={key} style={styles.infoRow}>
-                                <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
-                                <Text style={[styles.value, { color: colors.textPrimary }]}>{car[key]?.toString()}</Text>
+                                <Text style={styles.label}>{label}</Text>
+                                <Text style={styles.value}>{car[key]?.toString()}</Text>
                             </View>
                         ) : null
                     )}
                 </View>
 
-                
-                <View style={[styles.dateSection, { backgroundColor: colors.card }]}>
-                    <Text style={[styles.dateHeader, { color: colors.textPrimary }]}>Select Start & End</Text>
-                    <View style={[styles.separator, { backgroundColor: colors.separator }]} />
+                {/* Date Section */}
+                <View style={styles.dateSection}>
+                    <Text style={styles.dateHeader}>Select Start & End</Text>
 
                     <TouchableOpacity
-                        style={[styles.datePickerButton, { backgroundColor: colors.card2 }]}
+                        style={styles.datePickerButton}
                         onPress={() => { setStartMode("date"); setShowStartPicker(true); }}
                     >
-                        <Text style={[styles.datePickerText, { color: colors.textPrimary }]}>
-                            Start: {formatDateTime(startDate)}
-                        </Text>
+                        <Text style={styles.datePickerText}>Start: {formatDateTime(startDate)}</Text>
                     </TouchableOpacity>
 
                     {showStartPicker && (
@@ -200,26 +163,14 @@ export default function ConfirmationScreen() {
                             value={startDate}
                             mode={startMode}
                             display="inline"
-                            themeVariant={theme === "dark" ? "dark" : "light"}
+                            themeVariant="dark"
                             minuteInterval={15}
-                            textColor={theme === "dark" ? "#fff" : "#000"}
-                            style={{
-                                borderRadius: 14,
-                                marginBottom: 10,
-                                alignSelf: "center",
-                                backgroundColor: "transparent",
-                            }}
+                            textColor="#fff"
                             onChange={(event, selectedDate) => {
-                                if (!selectedDate) {
-                                    setShowStartPicker(false);
-                                    return;
-                                }
-
+                                if (!selectedDate) { setShowStartPicker(false); return; }
                                 if (startMode === "date") {
-                                    // Keep previous time
                                     setStartDate(prev => {
                                         const newDate = new Date(selectedDate.setHours(prev.getHours(), prev.getMinutes()));
-                                        // if new start > current end, update end
                                         if (newDate > endDate) setEndDate(newDate);
                                         return newDate;
                                     });
@@ -227,7 +178,6 @@ export default function ConfirmationScreen() {
                                     if (Platform.OS !== "ios") setShowStartPicker(true);
                                 } else {
                                     setStartDate(selectedDate);
-                                    // if new start > current end, update end
                                     if (selectedDate > endDate) setEndDate(selectedDate);
                                     setShowStartPicker(false);
                                 }
@@ -235,39 +185,24 @@ export default function ConfirmationScreen() {
                         />
                     )}
 
-
                     <TouchableOpacity
-                        style={[styles.datePickerButton, { backgroundColor: colors.card2 }]}
+                        style={styles.datePickerButton}
                         onPress={() => { setEndMode("date"); setShowEndPicker(true); }}
                     >
-                        <Text style={[styles.datePickerText, { color: colors.textPrimary }]}>
-                            End: {formatDateTime(endDate)}
-                        </Text>
+                        <Text style={styles.datePickerText}>End: {formatDateTime(endDate)}</Text>
                     </TouchableOpacity>
-
-
 
                     {showEndPicker && (
                         <DateTimePicker
                             value={endDate}
                             mode={endMode}
-                            minimumDate={startDate} 
+                            minimumDate={startDate}
                             display="inline"
-                            themeVariant={theme === "dark" ? "dark" : "light"}
+                            themeVariant="dark"
                             minuteInterval={15}
-                            textColor={theme === "dark" ? "#fff" : "#000"}
-                            style={{
-                                borderRadius: 14,
-                                marginBottom: 10,
-                                alignSelf: "center",
-                                backgroundColor: "transparent",
-                            }}
+                            textColor="#fff"
                             onChange={(event, selectedDate) => {
-                                if (!selectedDate) {
-                                    setShowEndPicker(false);
-                                    return;
-                                }
-
+                                if (!selectedDate) { setShowEndPicker(false); return; }
                                 if (endMode === "date") {
                                     setEndDate(prev => new Date(selectedDate.setHours(prev.getHours(), prev.getMinutes())));
                                     setEndMode("time");
@@ -280,23 +215,18 @@ export default function ConfirmationScreen() {
                         />
                     )}
 
-
                     <View style={{ alignItems: "center", marginTop: 16 }}>
-                        <View style={[styles.priceCard, { backgroundColor: colors.card2 }]}>
-                            <Text style={[styles.label, { fontSize: 16, color: colors.textSecondary, textAlign: "center" }]}>
-                                {dayCount} {dayCount === 1 ? "day" : "days"} × ${car.pricePerDay.toLocaleString()} per day
-                            </Text>
-                            <Text style={[styles.label, { marginTop: 4, fontSize: 18, color: colors.textPrimary, textAlign: "center" }]}>
+                        <View style={styles.priceCard}>
+                            <Text style={styles.priceText}>{dayCount} {dayCount === 1 ? "day" : "days"} × ${car.pricePerDay.toLocaleString()} per day</Text>
+                            <Text style={[styles.priceText, { fontSize: 18 }]}>
                                 Total: <Text style={{ fontWeight: "700", fontSize: 20 }}>${totalPrice}</Text>
                             </Text>
                         </View>
                     </View>
-
                 </View>
 
-                
-                <TouchableOpacity style={[styles.bookButton, { backgroundColor: colors.button }]} onPress={handleBooking}>
-                    <Text style={{ color: "#fff", fontSize: 18, fontWeight: "700" }}>Book Now</Text>
+                <TouchableOpacity style={styles.bookButton} onPress={handleBooking}>
+                    <Text style={styles.bookText}>Book Now</Text>
                 </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>
@@ -304,32 +234,28 @@ export default function ConfirmationScreen() {
 }
 
 const styles = StyleSheet.create({
-    priceCard: {
-        borderRadius: 14,
-        padding: 16,
-        width: "90%",           
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    background: { flex: 1 },
+    background: { flex: 1, backgroundColor: "#1a1a1a" },
     centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-    carouselContainer: { width: "100%", height: 250, position: "relative" },
-    heroImage: { width: width, height: 250 },
+
+    carouselContainer: { width: "100%", height: 250 },
+    heroImage: { width, height: 250 },
     dotsContainer: { position: "absolute", bottom: 10, left: 0, right: 0, flexDirection: "row", justifyContent: "center" },
     dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#fff", marginHorizontal: 4 },
-    backButton: { position: "absolute", top: 40, left: 16, padding: 8, borderRadius: 999, backgroundColor: "rgba(0,0,0,0.4)" },
-    carInfoContainer: { marginHorizontal: 16, marginTop: 16, borderRadius: 14, padding: 16 },
-    header: { fontSize: 28, fontWeight: "800", marginBottom: 16 },
+
+    carInfoContainer: { marginHorizontal: 16, marginTop: 16, borderRadius: 14, padding: 16, backgroundColor: "#242424" },
+    header: { fontSize: 28, fontWeight: "800", marginBottom: 16, color: "#fff" },
     infoRow: { flexDirection: "row", justifyContent: "space-between", marginVertical: 6 },
-    label: { fontSize: 14, fontWeight: "600" },
-    value: { fontSize: 16, fontWeight: "700" },
-    dateSection: { marginHorizontal: 16, marginTop: 24, borderRadius: 14, padding: 16 },
-    dateHeader: { fontSize: 16, fontWeight: "700", marginBottom: 8 },
-    separator: { height: 1, marginVertical: 12, borderRadius: 1 },
-    datePickerButton: { paddingVertical: 12, paddingHorizontal: 16, borderRadius: 14, marginBottom: 12 },
-    datePickerText: { fontSize: 16, fontWeight: "600" },
-    bookButton: { paddingVertical: 16, borderRadius: 16, alignItems: "center", marginHorizontal: 16, marginTop: 32, },
+    label: { fontSize: 14, fontWeight: "600", color: "#C0C0C0" },
+    value: { fontSize: 16, fontWeight: "700", color: "#fff" },
+
+    dateSection: { marginHorizontal: 16, marginTop: 24, borderRadius: 14, padding: 16, backgroundColor: "#242424" },
+    dateHeader: { fontSize: 16, fontWeight: "700", marginBottom: 8, color: "#fff" },
+    datePickerButton: { paddingVertical: 12, paddingHorizontal: 16, borderRadius: 14, marginBottom: 12, backgroundColor: "#2e2e2e" },
+    datePickerText: { fontSize: 16, fontWeight: "600", color: "#fff" },
+
+    priceCard: { borderRadius: 14, padding: 16, width: "90%", backgroundColor: "#2e2e2eff", alignItems: "center" },
+    priceText: { fontSize: 16, fontWeight: "600", color: "#C0C0C0", textAlign: "center" },
+
+    bookButton: { paddingVertical: 16, borderRadius: 16, alignItems: "center", marginHorizontal: 16, marginTop: 32, backgroundColor: "#3865e0ff" },
+    bookText: { color: "#fff", fontSize: 18, fontWeight: "700" },
 });

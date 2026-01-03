@@ -11,7 +11,7 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import app from "../firebaseConfig";
+import app from "../../firebaseConfig";
 
 const db = getFirestore(app);
 
