@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     View,
     Text,
@@ -10,22 +10,26 @@ import {
     useColorScheme,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { CarData, getCarsByRating } from '../../backend/firebase/carFirestore';
+import { CarData, getAvailableCars, getCarsByRating } from '../../backend/firebase/carFirestore';
 import { QueryDocumentSnapshot } from 'firebase/firestore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LocationModal from './LocationModal';
 import FilterModal from './FilterModal';
 
-// ---- Types ----
 type RootStackParamList = {
     Rental: undefined;
-    Confirmation: { carId: string;};
+    Confirmation: {
+        carId: string;
+        pickupDate: string | null;
+        dropoffDate: string | null;
+    };
 };
+
+
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Rental'>;
 
-// ---- Themes ----
 const lightTheme = {
     background: '#F8FAFC',
     primary: '#3B82F6',
@@ -62,15 +66,12 @@ const darkTheme = {
     textFilterButtonBackground: '#7d8696ff',
 };
 
-
-// ---- HomeScreen ----
 export default function HomeScreen() {
     const navigation = useNavigation<HomeScreenNavigationProp>();
     const scheme = useColorScheme();
-    const theme = scheme === 'light' ? darkTheme : lightTheme;
+    const theme = scheme === 'dark' ? lightTheme : darkTheme;
     const insets = useSafeAreaInsets();
 
-    // ---- State ----
     const [cars, setCars] = useState<(CarData & { id: string })[]>([]);
     const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -86,23 +87,46 @@ export default function HomeScreen() {
     const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
     const [selectedFuel, setSelectedFuel] = useState<string[]>([]);
 
-    // ---- Effects ----
-    useEffect(() => { fetchCars(); }, []);
+    const [pickupDate, setPickupDate] = useState<string | null>(null);
+    const [dropoffDate, setDropoffDate] = useState<string | null>(null);
 
-    const fetchCars = async () => {
-        try {
-            const { cars: fetchedCars, lastDoc } = await getCarsByRating(5);
-            setCars(fetchedCars);
-            setLastDoc(lastDoc || null);
-        } catch (err) { console.error(err); }
-    };
+    useFocusEffect(
+        useCallback(() => {
+            let isActive = true;
+
+            const fetchCarsByDate = async () => {
+                try {
+                    if (pickupDate && dropoffDate) {
+                        const availableCars = await getAvailableCars(pickupDate, dropoffDate);
+                        if (isActive) setCars(availableCars);
+                    } else {
+                        const { cars: fetchedCars, lastDoc } = await getCarsByRating(5);
+                        if (isActive) {
+                            setCars(fetchedCars);
+                            setLastDoc(lastDoc || null);
+                        }
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            };
+
+            fetchCarsByDate();
+
+            return () => {
+                isActive = false;
+            };
+        }, [pickupDate, dropoffDate])
+    );
+
 
     const fetchMoreCars = async () => {
         if (loadingMore || !lastDoc) return;
         setLoadingMore(true);
         try {
             const { cars: newCars, lastDoc: newLastDoc } = await getCarsByRating(3, lastDoc);
-            setCars(prev => [...prev, ...newCars]);
+            const uniqueNewCars = newCars.filter(nc => !cars.some(c => c.id === nc.id));
+            setCars(prev => [...prev, ...uniqueNewCars]);
             setLastDoc(newLastDoc || null);
         } catch (err) {
             console.error('Failed to fetch more cars:', err);
@@ -110,7 +134,8 @@ export default function HomeScreen() {
         setLoadingMore(false);
     };
 
-    // ---- Memoized Filters ----
+
+
     const filteredCars = useMemo(() => {
         const query = searchText.toLowerCase();
         return cars.filter(car => {
@@ -124,8 +149,8 @@ export default function HomeScreen() {
             const matchesLocation = locationText === '' || locationText === 'Anywhere'
                 ? true
                 : car.pickupLocation?.toLowerCase().includes(locationText.toLowerCase());
-
-            return matchesSearch && matchesPrice && matchesSeats && matchesRating && matchesBrand && matchesFuel && matchesLocation;
+            return matchesSearch && matchesPrice && matchesSeats && matchesRating &&
+                matchesBrand && matchesFuel && matchesLocation;
         });
     }, [cars, searchText, priceRange, seatRange, minRating, selectedBrands, selectedFuel, locationText]);
 
@@ -133,26 +158,33 @@ export default function HomeScreen() {
         return searchText.trim() || selectedBrands.length || selectedFuel.length ||
             priceRange[0] !== 0 || priceRange[1] !== 5000 ||
             seatRange[0] !== 0 || seatRange[1] !== 10 ||
-            minRating !== 0;
-    }, [searchText, selectedBrands, selectedFuel, priceRange, seatRange, minRating]);
+            minRating !== 0 || pickupDate || dropoffDate;
+    }, [searchText, selectedBrands, selectedFuel, priceRange, seatRange, minRating, pickupDate, dropoffDate]);
 
     const sectionTitle = hasActiveFilters ? 'Search Results' : 'Best Rated Cars';
     const displayLocation = locationText.trim() === '' ? 'Anywhere' : locationText;
 
-    // ---- Render ----
     return (
         <View style={[styles.container, { backgroundColor: theme.background, paddingTop: insets.top + 20 }]}>
-            {/* Logo & Location */}
+
             <View style={styles.topRow}>
                 <Text style={[styles.logo, { color: theme.primary }]}>LOANLY</Text>
             </View>
+
             <View style={styles.locationRow}>
                 <Text style={[styles.locationLabel, { color: theme.textSecondary }]}>Location</Text>
                 <Text style={[styles.locationDot, { color: theme.textSecondary }]}>·</Text>
                 <Text style={[styles.locationValue, { color: theme.primary }]}>{displayLocation}</Text>
+                {pickupDate && dropoffDate && (
+                    <>
+                        <Text style={[styles.locationDot, { color: theme.textSecondary, marginHorizontal: 4 }]}>·</Text>
+                        <Text style={[styles.locationValue, { color: theme.primary }]}>
+                            {new Date(pickupDate).toLocaleDateString()} → {new Date(dropoffDate).toLocaleDateString()}
+                        </Text>
+                    </>
+                )}
             </View>
 
-            {/* Search & Filter */}
             <View style={styles.searchWrapper}>
                 <View style={[styles.searchContainer, { backgroundColor: theme.inputBackground }]}>
                     <MaterialIcons name="search" size={20} color={theme.textSecondary} style={styles.icon} />
@@ -172,21 +204,26 @@ export default function HomeScreen() {
                 </Pressable>
             </View>
 
-            {/* Section Title */}
             <Text style={[styles.sectionTitle, { color: theme.primary }]}>{sectionTitle}</Text>
 
-            {/* Car List */}
             <FlatList
                 data={filteredCars}
-                keyExtractor={item => item.id}
+                keyExtractor={item => item.id.toString()}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 20 }}
                 onEndReached={fetchMoreCars}
                 onEndReachedThreshold={0.5}
                 renderItem={({ item }) => (
                     <Pressable
+                        key={item.id}
                         style={[styles.carCard, { backgroundColor: theme.card }]}
-                        onPress={() => navigation.navigate('Confirmation', { carId: item.id})}
+                        onPress={() =>
+                            navigation.navigate('Confirmation', {
+                                carId: item.id,
+                                pickupDate,
+                                dropoffDate,
+                            })
+                        }
                     >
                         <Image source={require('../assets/audi-etron-gt.png')} style={styles.carImage} resizeMode="cover" />
                         <View style={styles.carInfo}>
@@ -218,7 +255,6 @@ export default function HomeScreen() {
                 )}
             />
 
-            {/* Modals */}
             <LocationModal
                 visible={isLocationModalVisible}
                 setVisible={setLocationModalVisible}
@@ -226,6 +262,7 @@ export default function HomeScreen() {
                 setLocationText={setLocationText}
                 theme={theme}
             />
+
             <FilterModal
                 visible={isFilterModalVisible}
                 setVisible={setFilterModalVisible}
@@ -240,12 +277,15 @@ export default function HomeScreen() {
                 setSeatRange={setSeatRange}
                 minRating={minRating}
                 setMinRating={setMinRating}
+                pickupDate={pickupDate}
+                setPickupDate={setPickupDate}
+                dropoffDate={dropoffDate}
+                setDropoffDate={setDropoffDate}
             />
         </View>
     );
 }
 
-// ---- Styles ----
 const styles = StyleSheet.create({
     container: { flex: 1, paddingHorizontal: 20 },
     topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12 },

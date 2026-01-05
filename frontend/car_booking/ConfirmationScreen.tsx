@@ -18,7 +18,7 @@ import { getCarWithOwnerName } from "../../backend/firebase/firestoreUser";
 import { createBooking } from "../../backend/firebase/bookingsFirestore";
 
 type RootStackParamList = {
-    Confirmation: { carId: string };
+    Confirmation: { carId: string; pickupDate: string | null; dropoffDate: string | null };
 };
 
 type ConfirmationScreenRouteProp = RouteProp<RootStackParamList, "Confirmation">;
@@ -37,15 +37,15 @@ const carImages = [
 export default function ConfirmationScreen() {
     const route = useRoute<ConfirmationScreenRouteProp>();
     const navigation = useNavigation();
-    const { carId } = route.params;
+    const { carId, pickupDate, dropoffDate } = route.params;
 
     const [car, setCar] = useState<(CarData & { id: string; ownerName?: string }) | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeImage, setActiveImage] = useState(0);
 
     // Date pickers
-    const [startDate, setStartDate] = useState<Date>(new Date());
-    const [endDate, setEndDate] = useState<Date>(new Date());
+    const [startDate, setStartDate] = useState<Date>(pickupDate ? new Date(pickupDate) : new Date());
+    const [endDate, setEndDate] = useState<Date>(dropoffDate ? new Date(dropoffDate) : new Date());
     const [showStartPicker, setShowStartPicker] = useState(false);
     const [showEndPicker, setShowEndPicker] = useState(false);
     const [startMode, setStartMode] = useState<"date" | "time">("date");
@@ -53,12 +53,19 @@ export default function ConfirmationScreen() {
 
     useEffect(() => {
         const fetchCar = async () => {
-            const fetchedCar = await getCarWithOwnerName(carId);
-            setCar(fetchedCar);
-            setLoading(false);
+            try {
+                const carWithOwner = await getCarWithOwnerName(carId);
+                setCar(carWithOwner);
+                setLoading(false);
+            } catch (err) {
+                console.error(err);
+                setLoading(false);
+            }
         };
+
         fetchCar();
     }, [carId]);
+
 
     if (loading) return <ActivityIndicator size="large" style={styles.centered} color="#fff" />;
     if (!car) return <Text style={[styles.centered, { color: "#fff" }]}>Car not found</Text>;

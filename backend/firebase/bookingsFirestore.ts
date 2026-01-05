@@ -22,9 +22,33 @@ export interface BookingData {
   startDate: string;
   endDate: string;
   totalPrice: number;
-  status: "pending" | "confirmed" | "cancelled";
+  status: "pending" | "confirmed" | "cancelled" | "upcoming" | "ongoing" | "done";
   createdAt: number;
 }
+
+
+// update, we broke 
+export const updateBookingStatuses = async () => {
+  const bookingsCol = collection(db, "bookings");
+  const snapshot = await getDocs(bookingsCol);
+  const now = new Date();
+
+  for (const docSnap of snapshot.docs) {
+    const data = docSnap.data() as BookingData;
+    const start = new Date(data.startDate);
+    const end = new Date(data.endDate);
+    let newStatus: BookingData["status"] = data.status;
+
+    if (data.status === "cancelled") continue;
+    if (now < start) newStatus = "upcoming";
+    else if (now >= start && now <= end) newStatus = "ongoing";
+    else if (now > end) newStatus = "done";
+
+    if (newStatus !== data.status) {
+      await updateDoc(doc(db, "bookings", docSnap.id), { status: newStatus });
+    }
+  }
+};
 
 export const createBooking = async (
   booking: Omit<BookingData, "userId" | "createdAt" | "status">
@@ -33,17 +57,25 @@ export const createBooking = async (
   const user = auth.currentUser;
   if (!user) throw new Error("User not logged in");
 
+  const now = new Date();
+  const start = new Date(booking.startDate);
+  const end = new Date(booking.endDate);
+
+  let status: BookingData["status"] = "pending";
+  if (now < start) status = "upcoming";
+  else if (now >= start && now <= end) status = "ongoing";
+  else if (now > end) status = "done";
+
   const bookingData: BookingData = {
     ...booking,
     userId: user.uid,
-    status: "pending",
+    status,
     createdAt: Date.now(),
   };
 
   const docRef = await addDoc(collection(db, "bookings"), bookingData);
   return docRef.id;
 };
-
 
 export const getMyBookings = async () => {
   const auth = getAuth(app);

@@ -1,6 +1,7 @@
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, query, where, QueryDocumentSnapshot, orderBy, limit, startAfter } from "firebase/firestore";
+import { getFirestore, doc, getDoc, collection, getDocs, addDoc, query, where, QueryDocumentSnapshot, orderBy, limit, startAfter } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import app from "../../firebaseConfig";
+import { BookingData } from "./bookingsFirestore";
 
 export interface CarData {
   make: string;
@@ -14,9 +15,10 @@ export interface CarData {
   pickupLocation: string;
   dropoffLocation: string;
   ownerId?: string;
-  rating?: number; 
+  rating?: number;
   ownerName?: string;
   nameLower?: string;
+  bookedDates?: { start: string; end: string }[];
 }
 
 const db = getFirestore(app);
@@ -37,23 +39,6 @@ export const addCar = async (car: CarData) => {
   return docRef.id;
 };
 
-export const getAllCars = async (): Promise<(CarData & { id: string })[]> => {
-  const carsCol = collection(db, "cars");
-  const snapshot = await getDocs(carsCol);
-  return snapshot.docs.map(docSnap => ({ id: docSnap.id, ...(docSnap.data() as CarData) }));
-};
-
-export const getMyCars = async (): Promise<(CarData & { id: string })[]> => {
-  const auth = getAuth(app);
-  const user = auth.currentUser;
-  if (!user) throw new Error("User not logged in");
-
-  const carsCol = collection(db, "cars");
-  const q = query(carsCol, where("ownerId", "==", user.uid));
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map(docSnap => ({ id: docSnap.id, ...(docSnap.data() as CarData) }));
-};
 
 export interface PaginatedCars {
   cars: (CarData & { id: string })[];
@@ -66,10 +51,11 @@ export const getCarsByRating = async (
 ): Promise<PaginatedCars> => {
   const carsCol = collection(db, "cars");
 
-  let q = query(carsCol, orderBy("rating", "desc"), limit(pageSize));
-
+  let q;
   if (startAfterDoc) {
     q = query(carsCol, orderBy("rating", "desc"), startAfter(startAfterDoc), limit(pageSize));
+  } else {
+    q = query(carsCol, orderBy("rating", "desc"), limit(pageSize));
   }
 
   const snapshot = await getDocs(q);
@@ -102,61 +88,44 @@ export const getCarById = async (carId: string): Promise<CarData & { id: string 
   }
 };
 
-interface CarQueryOptions {
-    searchText?: string;
-    filters?: {
-        minRating?: number;
-        priceRange?: [number, number];
-        seatRange?: [number, number];
-        selectedBrands?: string[];
-        selectedFuel?: string[];
-        location?: string;
-    };
-    pageSize?: number;
-    startAfterDoc?: QueryDocumentSnapshot | null;
-}
+export const getAvailableCars = async (
+  pickupDate: string,
+  dropoffDate: string
+): Promise<(CarData & { id: string })[]> => {
+  const carsCol = collection(db, "cars");
+  const bookingsCol = collection(db, "bookings");
+
+  const carsSnapshot = await getDocs(carsCol);
+  const allCars = carsSnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as CarData) }));
+
+  const bookingsQuery = query(
+    bookingsCol,
+    where("startDate", "<=", dropoffDate),
+    where("endDate", ">=", pickupDate)
+  );
+  const bookingsSnapshot = await getDocs(bookingsQuery);
+
+  const bookedCarIds = bookingsSnapshot.docs
+    .map(docSnap => docSnap.data() as BookingData)
+    .filter(booking => booking.status !== "cancelled" && booking.status !== "done")
+    .map(booking => booking.carId);
+
+  const availableCars = allCars.filter(car => !bookedCarIds.includes(car.id));
+
+  return availableCars;
+};
 
 
-interface SearchParams {
-    searchText?: string;
-    location?: string;
-    priceRange?: [number, number];
-    seatRange?: [number, number];
-    minRating?: number;
-    selectedBrands?: string[];
-    selectedFuel?: string[];
-    pageSize?: number;
-    startAfterDoc?: any;
-}
+export const getCarWithOwnerName = async (carId: string): Promise<CarData & { id: string }> => {
+  const car = await getCarById(carId);
+  if (!car) throw new Error(`Car with ID ${carId} not found`);
 
-export async function searchCarsInFirestore(params: SearchParams) {
-    const carsRef = collection(db, "cars");
-    let q: any = query(carsRef, orderBy("rating", "desc"), limit(params.pageSize || 5));
+  if (!car.ownerId) return car;
 
-    if (params.startAfterDoc) {
-        q = query(q, startAfter(params.startAfterDoc));
-    }
+  const userDoc = await getDoc(doc(db, "users", car.ownerId));
+  const ownerName = userDoc.exists()
+    ? (userDoc.data() as { displayName?: string }).displayName ?? "Unknown"
+    : "Unknown";
 
-    if (params.minRating) q = query(q, where("rating", ">=", params.minRating));
-    if (params.priceRange) q = query(q, where("pricePerDay", ">=", params.priceRange[0]), where("pricePerDay", "<=", params.priceRange[1]));
-    if (params.seatRange) q = query(q, where("seats", ">=", params.seatRange[0]), where("seats", "<=", params.seatRange[1]));
-    if (params.selectedBrands && params.selectedBrands.length) q = query(q, where("carType", "in", params.selectedBrands));
-    if (params.selectedFuel && params.selectedFuel.length) q = query(q, where("fuelType", "in", params.selectedFuel));
-
-    // Firestore does not support "contains text" queries, so we filter text client-side
-    const snapshot = await getDocs(q);
-    let cars: (CarData & { id: string })[] = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as CarData) }));
-
-    if (params.searchText) {
-        const searchLower = params.searchText.toLowerCase();
-        cars = cars.filter(car => (`${car.make} ${car.model}`).toLowerCase().includes(searchLower));
-    }
-
-    if (params.location && params.location.toLowerCase() !== "anywhere") {
-        const locLower = params.location.toLowerCase();
-        cars = cars.filter(car => car.pickupLocation?.toLowerCase().includes(locLower));
-    }
-
-    const lastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
-    return { cars, lastDoc };
-}
+  return { ...car, ownerName };
+};
